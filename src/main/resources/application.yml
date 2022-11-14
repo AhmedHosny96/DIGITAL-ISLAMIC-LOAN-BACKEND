@@ -1,0 +1,21 @@
+
+cbs:
+  endpoint: ${VMA_URL}
+  username: ${VMA_USERNAME}
+  password: ${VMA_PASSWORD}
+
+server:
+  port: 9045
+
+  error:
+    include-message: always
+  netty:
+    connection-timeout: 120s
+
+
+spring:
+  config:
+    import: file:env.properties
+  application: cbs-customer-registration-service
+  profiles:
+    active: test
