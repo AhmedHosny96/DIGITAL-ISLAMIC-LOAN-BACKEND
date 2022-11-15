@@ -24,12 +24,21 @@ public class CbsClient extends WebServiceGatewaySupport {
 
     public CreateCustomerResponse createCustomerInfo(CcRequest request) throws Exception {
 
+
         request.setReference(reference);
         request.setCustTypeId(customerTypeId);
         request.setRegion(region);
         request.setRelOfficer(relationShipOfficerId);
-        //TODO: set contact type to default value , value to phone number
-        //TODO: set identity type to default value
+
+        CcContact contact = new CcContact();
+        contact.setType(237l);
+        contact.setValue(request.getMobileNumber());
+
+        Contacts contacts = new Contacts();
+        contacts.getContact().add(contact);
+
+        request.setContacts(contacts);
+
         CreateCustomer customer = new CreateCustomer();
         customer.setRequest(request);
 
@@ -48,6 +57,7 @@ public class CbsClient extends WebServiceGatewaySupport {
             throw new Exception(e.getMessage());
         }
     }
+
     //TODO: Deposit account creation
 
     public CreateDepositAccountResponse createCustomerDepositAccount(CaRequest request) throws Exception {
