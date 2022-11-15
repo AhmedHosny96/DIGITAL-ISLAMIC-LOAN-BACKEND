@@ -1,4 +1,4 @@
-package com.sahay.model;
+package com.sahay.dto;
 
 
 import lombok.AllArgsConstructor;

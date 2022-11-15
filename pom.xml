@@ -54,26 +54,26 @@
                 <version>2.7.5</version>
             </plugin>
 
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.14.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <generatePackage>com.sahay.cbs</generatePackage>
-                    <generateDirectory>${project.basedir}/src/main/java</generateDirectory>
-                    <schemaDirectory>${project.basedir}/src/main/resources/xsd</schemaDirectory>
-                    <schemaIncludes>
-                        <include>*.xsd</include>
-                    </schemaIncludes>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.jvnet.jaxb2.maven2</groupId>-->
+<!--                <artifactId>maven-jaxb2-plugin</artifactId>-->
+<!--                <version>0.14.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>generate</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <generatePackage>com.sahay.cbs</generatePackage>-->
+<!--                    <generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
+<!--                    <schemaDirectory>${project.basedir}/src/main/resources/xsd</schemaDirectory>-->
+<!--                    <schemaIncludes>-->
+<!--                        <include>*.xsd</include>-->
+<!--                    </schemaIncludes>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
         </plugins>
         <finalName>cbs-customer-registration-service-test</finalName>

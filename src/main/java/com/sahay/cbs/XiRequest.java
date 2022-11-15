@@ -41,17 +41,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlSeeAlso({
     CaRequest.class,
     CcRequest.class,
-    AcQuery.class,
-    CuQuery.class,
-    UlRequest.class,
-    FxQuery.class,
-    TxQuery.class,
-    TxRequest.class,
-    TpRequest.class,
-    LhRequest.class,
-    DhRequest.class,
-    PiQuery.class,
-    ClQuery.class
+
 })
 public class XiRequest {
 

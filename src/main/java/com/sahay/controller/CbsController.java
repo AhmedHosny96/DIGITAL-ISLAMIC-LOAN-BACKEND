@@ -1,9 +1,8 @@
 package com.sahay.controller;
 
-import com.sahay.model.ResponseMessage;
+import com.sahay.dto.ResponseMessage;
 import com.sahay.cbs.*;
 import com.sahay.client.CbsClient;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

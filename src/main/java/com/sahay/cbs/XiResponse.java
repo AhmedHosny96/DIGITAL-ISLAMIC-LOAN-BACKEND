@@ -18,9 +18,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for xiResponse complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="xiResponse"&gt;
  *   &lt;complexContent&gt;
@@ -37,33 +37,21 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "xiResponse", propOrder = {
-    "result",
-    "reference",
-    "message",
-    "availableBalance",
-    "ledgerBalance",
-    "txnId"
+        "result",
+        "reference",
+        "message",
+        "availableBalance",
+        "ledgerBalance",
+        "txnId"
 })
 @XmlSeeAlso({
-    ClResult.class,
-    LiResponse.class,
-    CqResult.class,
-    CaResponse.class,
-    LhResponse.class,
-    BrResponse.class,
-    TqResult.class,
-    LsResponse.class,
-    CcResponse.class,
-    AqResult.class,
-    PiResult.class,
-    FxResult.class,
-    DhResponse.class,
-    UlResponse.class
+
+        CaResponse.class,
+        CcResponse.class,
+
 })
 public class XiResponse {
 
@@ -82,11 +70,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the result property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getResult() {
         return result;
@@ -94,11 +80,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the result property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setResult(String value) {
         this.result = value;
@@ -106,11 +90,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the reference property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getReference() {
         return reference;
@@ -118,11 +100,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the reference property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setReference(String value) {
         this.reference = value;
@@ -130,11 +110,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the message property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getMessage() {
         return message;
@@ -142,11 +120,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the message property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setMessage(String value) {
         this.message = value;
@@ -154,11 +130,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the availableBalance property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getAvailableBalance() {
         return availableBalance;
@@ -166,11 +140,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the availableBalance property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setAvailableBalance(BigDecimal value) {
         this.availableBalance = value;
@@ -178,11 +150,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the ledgerBalance property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getLedgerBalance() {
         return ledgerBalance;
@@ -190,11 +160,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the ledgerBalance property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setLedgerBalance(BigDecimal value) {
         this.ledgerBalance = value;
@@ -202,11 +170,9 @@ public class XiResponse {
 
     /**
      * Gets the value of the txnId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Long }
-     *     
+     *
+     * @return possible object is
+     * {@link Long }
      */
     public Long getTxnId() {
         return txnId;
@@ -214,11 +180,9 @@ public class XiResponse {
 
     /**
      * Sets the value of the txnId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Long }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Long }
      */
     public void setTxnId(Long value) {
         this.txnId = value;
