@@ -12,6 +12,8 @@ public class ResponseMessage {
 
     public String status;
     public String message;
+    public String accountName;
     public String accountNumber;
+    public String phoneNumber;
     public String customerNumber;
 }

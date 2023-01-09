@@ -255,4 +255,17 @@ public class CaRequest
         this.riskClassId = value;
     }
 
+    @Override
+    public String toString() {
+        return "CaRequest{" +
+                "productId=" + productId +
+                ", customerNumber='" + customerNumber + '\'' +
+                ", accountTitle='" + accountTitle + '\'' +
+                ", campaignRefId=" + campaignRefId +
+                ", relOfficer=" + relOfficer +
+                ", openingReasonId=" + openingReasonId +
+                ", sourceOfFundId=" + sourceOfFundId +
+                ", riskClassId=" + riskClassId +
+                '}';
+    }
 }

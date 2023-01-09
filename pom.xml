@@ -21,9 +21,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -33,6 +38,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -54,26 +64,26 @@
                 <version>2.7.5</version>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.jvnet.jaxb2.maven2</groupId>-->
-<!--                <artifactId>maven-jaxb2-plugin</artifactId>-->
-<!--                <version>0.14.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <configuration>-->
-<!--                    <generatePackage>com.sahay.cbs</generatePackage>-->
-<!--                    <generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
-<!--                    <schemaDirectory>${project.basedir}/src/main/resources/xsd</schemaDirectory>-->
-<!--                    <schemaIncludes>-->
-<!--                        <include>*.xsd</include>-->
-<!--                    </schemaIncludes>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+<!--                        <plugin>-->
+<!--                            <groupId>org.jvnet.jaxb2.maven2</groupId>-->
+<!--                            <artifactId>maven-jaxb2-plugin</artifactId>-->
+<!--                            <version>0.14.0</version>-->
+<!--                            <executions>-->
+<!--                                <execution>-->
+<!--                                    <goals>-->
+<!--                                        <goal>generate</goal>-->
+<!--                                    </goals>-->
+<!--                                </execution>-->
+<!--                            </executions>-->
+<!--                            <configuration>-->
+<!--                                <generatePackage>com.sahay.ne</generatePackage>-->
+<!--                                <generateDirectory>${project.basedir}/src/main/java</generateDirectory>-->
+<!--                                <schemaDirectory>${project.basedir}/src/main/resources/xsd</schemaDirectory>-->
+<!--                                <schemaIncludes>-->
+<!--                                    <include>*.xsd</include>-->
+<!--                                </schemaIncludes>-->
+<!--                            </configuration>-->
+<!--                        </plugin>-->
 
         </plugins>
         <finalName>cbs-customer-registration-service-test</finalName>

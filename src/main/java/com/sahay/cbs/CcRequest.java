@@ -764,4 +764,28 @@ public class CcRequest
 
     }
 
+    @Override
+    public String toString() {
+        return "CcRequest{" +
+                "custTypeId=" + custTypeId +
+                ", mobileNumber='" + mobileNumber + '\'' +
+                ", address1='" + address1 + '\'' +
+                ", address2='" + address2 + '\'' +
+                ", cityTown='" + cityTown + '\'' +
+                ", maritalStatus='" + maritalStatus + '\'' +
+                ", spouseName='" + spouseName + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", postalAddress='" + postalAddress + '\'' +
+                ", region='" + region + '\'' +
+                ", relOfficer=" + relOfficer +
+                ", branchId=" + branchId +
+                ", identities=" + identities +
+                ", contacts=" + contacts +
+                ", images=" + images +
+                '}';
+    }
 }
