@@ -1,0 +1,985 @@
+<!--  Published by JAX-WS RI (http://jax-ws.java.net). RI's version is JAX-WS RI 2.2.10-b140319.1121 svn-revision#7b34660d6bc70e587e8ec81a17e4d76af68816a6.  -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns0="http://vma.PHilae/" targetNamespace="http://vma.PHilae/">
+    <xsd:complexType name="getAccountBalanceResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="caRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="productId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="customerNumber" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="accountTitle" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="campaignRefId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="relOfficer" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="openingReasonId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="sourceOfFundId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="riskClassId" type="xsd:long" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getUserDetailsResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:ulResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="fxRate">
+        <xsd:sequence>
+            <xsd:element name="buyRate" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="currency" type="ns0:cnCurrency" minOccurs="0"/>
+            <xsd:element name="sellRate" type="xsd:decimal" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositAccountResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:aqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerAccountInfoDetailsResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:aqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postGLToDepositTransferResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="cnAccount">
+        <xsd:sequence>
+            <xsd:element name="accountName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="accountNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="accountType" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="acctId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="branch" type="ns0:cnBranch" minOccurs="0"/>
+            <xsd:element name="clearedBalance" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="currency" type="ns0:cnCurrency" minOccurs="0"/>
+            <xsd:element name="custCat" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="custId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="productId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="shortName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateUserResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:ulResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerAccountInfoBasicResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:aqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="searchCustomer">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:clQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryLoanInformationResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:liResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="clResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="customers" type="ns0:cnCustomer" maxOccurs="unbounded" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="activateCustomerResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerInfoBasic">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:cuQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getBranchInfoResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:brResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="usRole">
+        <xsd:sequence>
+            <xsd:element name="branchCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="branchId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="branchName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="buRoleId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="drawers" type="ns0:tlDrawer" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+            <xsd:element name="limits" type="ns0:urLimit" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="roleId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="supervisor" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="userId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="userName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="userRoleId" type="xsd:long" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postDepositTransferResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryBranches">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:xiRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ccRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="custTypeId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="mobileNumber" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="address1" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="address2" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="cityTown" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="maritalStatus" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="spouseName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="dateOfBirth" type="xsd:dateTime" minOccurs="0"/>
+                    <xsd:element name="firstName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="lastName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="middleName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="gender" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="postalAddress" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="region" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="relOfficer" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="branchId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="identities" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="identity" type="ns0:ccIdentity" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="contacts" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="contact" type="ns0:ccContact" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="images" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="image" type="ns0:ccImage" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="acQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="accountNumber" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="searchTransactionDetailsResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:tqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getForeignExchangeRateResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:fxResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="cuQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="customerNumber" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="cbTxn">
+        <xsd:sequence>
+            <xsd:element name="account" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="amount" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="contra" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="currency" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="txnDate" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="txnId" type="xsd:long" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="tlDrawer">
+        <xsd:sequence>
+            <xsd:element name="currencies" type="ns0:cnCurrency" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+            <xsd:element name="drawerAccount" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="drawerId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="drawerNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="openDate" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositBalanceResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ulRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="userName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="password" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="fxQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="currency" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getAccountHistory">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:dhRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="urLimit">
+        <xsd:sequence>
+            <xsd:element name="creditLimit" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="currency" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="debitLimit" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="roleId" type="xsd:long" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="liResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="loanDetail" type="ns0:lnDetail" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="xiResponse">
+        <xsd:sequence>
+            <xsd:element name="result" type="xsd:string"/>
+            <xsd:element name="reference" type="xsd:string" nillable="true"/>
+            <xsd:element name="message" type="xsd:string" nillable="true"/>
+            <xsd:element name="availableBalance" type="xsd:decimal" nillable="true"/>
+            <xsd:element name="ledgerBalance" type="xsd:decimal" nillable="true"/>
+            <xsd:element name="txnId" type="xsd:long" nillable="true"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="bnUser">
+        <xsd:sequence>
+            <xsd:element name="branchId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="branchName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="locked" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="role" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="roleId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="roles" type="ns0:usRole" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+            <xsd:element name="staffName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="staffNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="userId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="userName" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="cqResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="customer" type="ns0:cnCustomer" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="queryLoanInformation">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getAccountHistoryResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:dhResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getLoanInfo">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postGLToGLTransferResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositMinistatementResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:dhResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="caResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="accountNumber" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="activateDepositAccountResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryGLHistoryResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:lhResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="createDepositAccount">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:caRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="searchCustomerInBranchResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:clResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="txQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="txnId" type="xsd:long"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositBalance">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositHistory">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:dhRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateTransaction">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:txQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerInfoDetailsResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:cqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryBranchesResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:brResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="createCustomerResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:ccResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="searchTransactionDetails">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:txQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="cnCurrency">
+        <xsd:sequence>
+            <xsd:element name="currencyCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="currencyId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="currencyName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="decimalPlaces" type="xsd:int"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositMinistatement">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="activateDepositAccount">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerInfoBasicResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:cqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getInterestRateResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:piResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getForeignExchangeRate">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:fxQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getUserDetails">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:ulRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateTransactionResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:tqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="validateUser">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:ulRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="piRate">
+        <xsd:sequence>
+            <xsd:element name="drcrIndicator" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="interestRate" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="productCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="productName" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getAccountInformation">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="searchCustomerInBranch">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:clQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="txRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="debitAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="creditAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="currency" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="amount" type="xsd:decimal" minOccurs="0"/>
+                    <xsd:element name="narration" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="tpRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="debitAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="creditAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="currency" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="amount" type="xsd:decimal" minOccurs="0"/>
+                    <xsd:element name="narration" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getAccountInformationResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:aqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerInfoDetails">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:cuQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postDepositToGLTransferResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:xiResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getBranchInfo">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:xiRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="lhResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="records" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="record" type="ns0:lhRecord" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getLoanScheduleInfo">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postDepositTransfer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:tpRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryCustomer">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:cuQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="lhRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="ledgerAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="prevAcctHistId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="pageSize" type="xsd:long" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="brResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="branches" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="branches" type="ns0:cnBranch" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getInterestRate">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:piQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ccIdentity">
+        <xsd:sequence>
+            <xsd:element name="idNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="idType" type="xsd:long" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryGLHistory">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:lhRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="tqResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="txn" type="ns0:cbTxn" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="cnCustomer">
+        <xsd:sequence>
+            <xsd:element name="branch" type="ns0:cnBranch" minOccurs="0"/>
+            <xsd:element name="custCat" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="custId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="custName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="custNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="custType" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="custTypeId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="dateOfBirth" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="depositAccounts" type="ns0:cnAccount" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+            <xsd:element name="gender" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="identity" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="mobileNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="nationality" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="region" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="lsResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="events" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="events" type="ns0:lnEvent" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositAccount">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="xiRequest">
+        <xsd:sequence>
+            <xsd:element name="reference" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryDepositHistoryResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:dhResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ccResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="customerNumber" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="createDepositAccountResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:caResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryLoanSchedule">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerAccountInfoDetails">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="lnDetail">
+        <xsd:sequence>
+            <xsd:element name="clearedBalance" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="loanAccount" type="ns0:cnAccount" minOccurs="0"/>
+            <xsd:element name="mobileNumber" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="paymentDueDate" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="repaymentAccount" type="ns0:cnAccount" minOccurs="0"/>
+            <xsd:element name="repaymentAmount" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="unpaidAmount" type="xsd:decimal" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="aqResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="account" type="ns0:cnAccount" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="getAccountBalance">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="piResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="rates" type="ns0:piRate" maxOccurs="unbounded" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="postGLToDepositTransfer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:txRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="dhRequest">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="accounts" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="prevAcctHistId" type="xsd:long" minOccurs="0"/>
+                    <xsd:element name="pageSize" type="xsd:long" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="activateCustomer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:cuQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="fxResult">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="rates" type="ns0:fxRate" maxOccurs="unbounded" nillable="true"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="ccContact">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getLoanInfoResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:liResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="dhRecord">
+        <xsd:sequence>
+            <xsd:element name="acctAmt" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="acctCrncyCdIso" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="acctHistId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="acctNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="buNm" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="channelDesc" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="channelId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="chqNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="depositorPayeeNm" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="drCrInd" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="eventCd" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="originBuId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="revTranJournalId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="revTxnFg" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="stmntBal" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="sysCreateTs" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="tranDesc" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="tranDt" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="tranJournalId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="tranRefTxt" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="txnContraAcctNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="valueDt" type="xsd:dateTime" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="piQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="product" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="lhRecord">
+        <xsd:sequence>
+            <xsd:element name="acctAmt" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="acctHistId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="buNm" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="channelDesc" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="channelId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="chqNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="contraAcctNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="crncyCdIso" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="drCrInd" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="eventCd" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="glAcctNo" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="originBuId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="stmntBal" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="sysCreateTs" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="tranDesc" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="tranDt" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="tranJournalId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="tranRefTxt" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="valueDt" type="xsd:dateTime" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="clQuery">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiRequest">
+                <xsd:sequence>
+                    <xsd:element name="customerName" type="xsd:string"/>
+                    <xsd:element name="branchCode" type="xsd:string"/>
+                    <xsd:element name="pageNumber" type="xsd:int"/>
+                    <xsd:element name="pageSize" type="xsd:int"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="lnEvent">
+        <xsd:sequence>
+            <xsd:element name="acctId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="amountPaid" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="amountUnpaid" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="dueDate" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="eventDesc" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="eventId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="fundingAcctId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="latefeeFg" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="repmntAmount" type="xsd:decimal" minOccurs="0"/>
+            <xsd:element name="serviceDate" type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="createCustomer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:ccRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getCustomerAccountInfoBasic">
+        <xsd:sequence>
+            <xsd:element name="query" type="ns0:acQuery" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ccImage">
+        <xsd:sequence>
+            <xsd:element name="format" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="image" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="type" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="dhResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="records" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="record" type="ns0:dhRecord" minOccurs="0" maxOccurs="unbounded"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="searchCustomerResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:clResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postDepositToGLTransfer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:txRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="queryCustomerResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:cqResult" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="cnBranch">
+        <xsd:sequence>
+            <xsd:element name="buCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="buId" type="xsd:long" minOccurs="0"/>
+            <xsd:element name="buName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="glPrefix" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="status" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ulResponse">
+        <xsd:complexContent>
+            <xsd:extension base="ns0:xiResponse">
+                <xsd:sequence>
+                    <xsd:element name="user" type="ns0:bnUser" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="queryLoanScheduleResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:lsResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="postGLToGLTransfer">
+        <xsd:sequence>
+            <xsd:element name="request" type="ns0:txRequest" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="getLoanScheduleInfoResponse">
+        <xsd:sequence>
+            <xsd:element name="return" type="ns0:lsResponse" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="getAccountInformationResponse" type="ns0:getAccountInformationResponse"/>
+    <xsd:element name="getAccountBalanceResponse" type="ns0:getAccountBalanceResponse"/>
+    <xsd:element name="getUserDetailsResponse" type="ns0:getUserDetailsResponse"/>
+    <xsd:element name="queryDepositAccountResponse" type="ns0:queryDepositAccountResponse"/>
+    <xsd:element name="getCustomerInfoDetails" type="ns0:getCustomerInfoDetails"/>
+    <xsd:element name="postDepositToGLTransferResponse" type="ns0:postDepositToGLTransferResponse"/>
+    <xsd:element name="getBranchInfo" type="ns0:getBranchInfo"/>
+    <xsd:element name="getCustomerAccountInfoDetailsResponse" type="ns0:getCustomerAccountInfoDetailsResponse"/>
+    <xsd:element name="postGLToDepositTransferResponse" type="ns0:postGLToDepositTransferResponse"/>
+    <xsd:element name="validateUserResponse" type="ns0:validateUserResponse"/>
+    <xsd:element name="getCustomerAccountInfoBasicResponse" type="ns0:getCustomerAccountInfoBasicResponse"/>
+    <xsd:element name="searchCustomer" type="ns0:searchCustomer"/>
+    <xsd:element name="getLoanScheduleInfo" type="ns0:getLoanScheduleInfo"/>
+    <xsd:element name="queryLoanInformationResponse" type="ns0:queryLoanInformationResponse"/>
+    <xsd:element name="postDepositTransfer" type="ns0:postDepositTransfer"/>
+    <xsd:element name="queryCustomer" type="ns0:queryCustomer"/>
+    <xsd:element name="activateCustomerResponse" type="ns0:activateCustomerResponse"/>
+    <xsd:element name="getCustomerInfoBasic" type="ns0:getCustomerInfoBasic"/>
+    <xsd:element name="getBranchInfoResponse" type="ns0:getBranchInfoResponse"/>
+    <xsd:element name="postDepositTransferResponse" type="ns0:postDepositTransferResponse"/>
+    <xsd:element name="queryBranches" type="ns0:queryBranches"/>
+    <xsd:element name="getInterestRate" type="ns0:getInterestRate"/>
+    <xsd:element name="queryGLHistory" type="ns0:queryGLHistory"/>
+    <xsd:element name="searchTransactionDetailsResponse" type="ns0:searchTransactionDetailsResponse"/>
+    <xsd:element name="getForeignExchangeRateResponse" type="ns0:getForeignExchangeRateResponse"/>
+    <xsd:element name="queryDepositAccount" type="ns0:queryDepositAccount"/>
+    <xsd:element name="queryDepositHistoryResponse" type="ns0:queryDepositHistoryResponse"/>
+    <xsd:element name="queryDepositBalanceResponse" type="ns0:queryDepositBalanceResponse"/>
+    <xsd:element name="getAccountHistory" type="ns0:getAccountHistory"/>
+    <xsd:element name="createDepositAccountResponse" type="ns0:createDepositAccountResponse"/>
+    <xsd:element name="queryLoanSchedule" type="ns0:queryLoanSchedule"/>
+    <xsd:element name="getCustomerAccountInfoDetails" type="ns0:getCustomerAccountInfoDetails"/>
+    <xsd:element name="getAccountBalance" type="ns0:getAccountBalance"/>
+    <xsd:element name="queryLoanInformation" type="ns0:queryLoanInformation"/>
+    <xsd:element name="postGLToDepositTransfer" type="ns0:postGLToDepositTransfer"/>
+    <xsd:element name="getAccountHistoryResponse" type="ns0:getAccountHistoryResponse"/>
+    <xsd:element name="getLoanInfo" type="ns0:getLoanInfo"/>
+    <xsd:element name="activateCustomer" type="ns0:activateCustomer"/>
+    <xsd:element name="postGLToGLTransferResponse" type="ns0:postGLToGLTransferResponse"/>
+    <xsd:element name="queryDepositMinistatementResponse" type="ns0:queryDepositMinistatementResponse"/>
+    <xsd:element name="activateDepositAccountResponse" type="ns0:activateDepositAccountResponse"/>
+    <xsd:element name="getLoanInfoResponse" type="ns0:getLoanInfoResponse"/>
+    <xsd:element name="queryGLHistoryResponse" type="ns0:queryGLHistoryResponse"/>
+    <xsd:element name="createDepositAccount" type="ns0:createDepositAccount"/>
+    <xsd:element name="searchCustomerInBranchResponse" type="ns0:searchCustomerInBranchResponse"/>
+    <xsd:element name="queryDepositBalance" type="ns0:queryDepositBalance"/>
+    <xsd:element name="queryDepositHistory" type="ns0:queryDepositHistory"/>
+    <xsd:element name="validateTransaction" type="ns0:validateTransaction"/>
+    <xsd:element name="createCustomer" type="ns0:createCustomer"/>
+    <xsd:element name="getCustomerInfoDetailsResponse" type="ns0:getCustomerInfoDetailsResponse"/>
+    <xsd:element name="queryBranchesResponse" type="ns0:queryBranchesResponse"/>
+    <xsd:element name="createCustomerResponse" type="ns0:createCustomerResponse"/>
+    <xsd:element name="searchTransactionDetails" type="ns0:searchTransactionDetails"/>
+    <xsd:element name="getCustomerAccountInfoBasic" type="ns0:getCustomerAccountInfoBasic"/>
+    <xsd:element name="queryDepositMinistatement" type="ns0:queryDepositMinistatement"/>
+    <xsd:element name="activateDepositAccount" type="ns0:activateDepositAccount"/>
+    <xsd:element name="searchCustomerResponse" type="ns0:searchCustomerResponse"/>
+    <xsd:element name="getCustomerInfoBasicResponse" type="ns0:getCustomerInfoBasicResponse"/>
+    <xsd:element name="getInterestRateResponse" type="ns0:getInterestRateResponse"/>
+    <xsd:element name="getForeignExchangeRate" type="ns0:getForeignExchangeRate"/>
+    <xsd:element name="getUserDetails" type="ns0:getUserDetails"/>
+    <xsd:element name="postDepositToGLTransfer" type="ns0:postDepositToGLTransfer"/>
+    <xsd:element name="queryCustomerResponse" type="ns0:queryCustomerResponse"/>
+    <xsd:element name="validateTransactionResponse" type="ns0:validateTransactionResponse"/>
+    <xsd:element name="validateUser" type="ns0:validateUser"/>
+    <xsd:element name="queryLoanScheduleResponse" type="ns0:queryLoanScheduleResponse"/>
+    <xsd:element name="postGLToGLTransfer" type="ns0:postGLToGLTransfer"/>
+    <xsd:element name="getAccountInformation" type="ns0:getAccountInformation"/>
+    <xsd:element name="searchCustomerInBranch" type="ns0:searchCustomerInBranch"/>
+    <xsd:element name="getLoanScheduleInfoResponse" type="ns0:getLoanScheduleInfoResponse"/>
+</xsd:schema>
