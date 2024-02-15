@@ -1,4 +1,4 @@
-package com.sahay.loan;
+package com.sahay.loan.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

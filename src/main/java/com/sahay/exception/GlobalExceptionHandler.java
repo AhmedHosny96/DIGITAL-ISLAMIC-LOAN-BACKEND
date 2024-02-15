@@ -1,6 +1,7 @@
 package com.sahay.exception;
 
 
+import com.sahay.dto.CustomResponse;
 import com.sahay.dto.ErrorMessage;
 import lombok.var;
 import org.springframework.http.HttpStatus;
@@ -15,18 +16,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorMessage> apiException(ApiException exception , WebRequest request){
-        var errorMessage = new ErrorMessage("999" , exception.getMessage());
+    public ResponseEntity<ErrorMessage> apiException(ApiException exception, WebRequest request) {
+        var errorMessage = new ErrorMessage("999", exception.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
 
     }
 
     @ExceptionHandler(PhoneNumberTakenException.class)
-    public ResponseEntity<ErrorMessage> phoneNumberTakenException(PhoneNumberTakenException exception , WebRequest request){
-        var errorMessage = new ErrorMessage("999" , exception.getMessage());
+    public ResponseEntity<ErrorMessage> phoneNumberTakenException(PhoneNumberTakenException exception, WebRequest request) {
+        var errorMessage = new ErrorMessage("999", exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
 
     }
 
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<CustomResponse> customException(PhoneNumberTakenException exception, WebRequest request) {
+        var errorMessage = new CustomResponse("004", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+
+    }
 
 }

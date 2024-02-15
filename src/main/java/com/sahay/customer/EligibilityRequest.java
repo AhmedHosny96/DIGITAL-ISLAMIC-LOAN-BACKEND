@@ -1,9 +1,9 @@
-package com.sahay.account;
+package com.sahay.customer;
 
 import lombok.Data;
 
 @Data
-public class AccountRequest {
+public class EligibilityRequest {
 
     private String accountNumber;
     private int productId;

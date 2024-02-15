@@ -1,12 +1,12 @@
 package com.sahay.config;
 
 
-
 import com.sahay.cbs.*;
 import com.sahay.exception.ApiException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
+
 import javax.xml.bind.JAXBElement;
 import java.util.UUID;
 
@@ -36,6 +36,7 @@ public class CbsClient extends WebServiceGatewaySupport {
             throw new ApiException(e.getCause().toString());
         }
     }
+
     // TODO : CHECK BALANCE
     public QueryDepositBalanceResponse getAccountBalance(AcQuery acQuery) throws ApiException {
 
@@ -54,5 +55,27 @@ public class CbsClient extends WebServiceGatewaySupport {
             throw new ApiException(e.getCause().toString());
         }
     }
+
+    // GL TO GL
+    public PostGLToGLTransferResponse postGlToGl(TxRequest request) throws ApiException {
+        
+        ObjectFactory objectFactory = new ObjectFactory();
+        PostGLToGLTransfer postGLToGLTransfer = new PostGLToGLTransfer();
+
+        postGLToGLTransfer.setRequest(request);
+
+        JAXBElement<PostGLToGLTransfer> postGLToGLTransfer1 = objectFactory.createPostGLToGLTransfer(postGLToGLTransfer);
+
+        try {
+
+            JAXBElement<PostGLToGLTransferResponse> response = (JAXBElement<PostGLToGLTransferResponse>) getWebServiceTemplate().marshalSendAndReceive(postGLToGLTransfer1);
+
+            return response.getValue();
+        } catch (Exception e) {
+            throw new ApiException(e.getCause().toString());
+        }
+
+    }
+
 
 }

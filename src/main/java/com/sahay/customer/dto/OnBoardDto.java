@@ -1,4 +1,4 @@
-package com.sahay.loan;
+package com.sahay.customer.dto;
 
 
 import lombok.AllArgsConstructor;
@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoanConfirmationRequest {
+public class OnBoardDto {
 
     private String accountNumber;
-    private int otp;
-
+    private String comment;
+    private int createdBy;
 }
