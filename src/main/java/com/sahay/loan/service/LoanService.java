@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -534,38 +535,49 @@ public class LoanService {
     // TODO REPAYMENT POST TO CBS
 
 
-
+    @Scheduled(fixedRate = 1800000)
     public void repaymentPostToCbs() throws ApiException {
 
-        CbsPosting cbsPosting = cbsPostingRepo.findTopByStatus(0).get();
-        // first post
-        TxRequest repaymentFirstPostRequest = new TxRequest();
-        repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
+        log.info("REPAYMENT POST TO CBS KICK OFF =======================");
 
-        repaymentFirstPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
-        repaymentFirstPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
-        repaymentFirstPostRequest.setCurrency(CURRENCY);
-        repaymentFirstPostRequest.setCreditAccount(E_MURABAHA_PRINCIPAL_LEDGER);
-        repaymentFirstPostRequest.setDebitAccount(E_MURABAHA_POOL_ACCOUNT);
+        Optional<CbsPosting> topByStatus = cbsPostingRepo.findTopByStatus(0);
 
-        JSONObject firstGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+        if (topByStatus.isPresent()) {
 
-        // second
-        TxRequest repaymentSecondPostRequest = new TxRequest();
-        repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
+            CbsPosting cbsPosting = topByStatus.get();
 
-        repaymentSecondPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
-        repaymentSecondPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
-        repaymentSecondPostRequest.setCurrency(CURRENCY);
-        repaymentSecondPostRequest.setCreditAccount(E_MURABAHA_PROFIT_RECEIVABLE);
-        repaymentSecondPostRequest.setDebitAccount(E_MURABAHA_PROFIT_LEDGER);
 
-        JSONObject secondGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+            log.info("CBS POSTING RECORD : {}", topByStatus.get());
+            // first post
+            TxRequest repaymentFirstPostRequest = new TxRequest();
+            repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
 
-        // if both success update the status to 1
-        if (firstGLPostResponse.get("response").equals("000") && secondGLPostResponse.get("response").equals("000")) {
-            cbsPosting.setStatus(1);
-            cbsPostingRepo.save(cbsPosting);
+            repaymentFirstPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
+            repaymentFirstPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
+            repaymentFirstPostRequest.setCurrency(CURRENCY);
+            repaymentFirstPostRequest.setCreditAccount(E_MURABAHA_PRINCIPAL_LEDGER);
+            repaymentFirstPostRequest.setDebitAccount(E_MURABAHA_POOL_ACCOUNT);
+
+            JSONObject firstGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+
+            // second
+            TxRequest repaymentSecondPostRequest = new TxRequest();
+            repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
+
+            repaymentSecondPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
+            repaymentSecondPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
+            repaymentSecondPostRequest.setCurrency(CURRENCY);
+            repaymentSecondPostRequest.setCreditAccount(E_MURABAHA_PROFIT_RECEIVABLE);
+            repaymentSecondPostRequest.setDebitAccount(E_MURABAHA_PROFIT_LEDGER);
+
+            JSONObject secondGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+
+            // if both success update the status to 1
+            if (firstGLPostResponse.get("result").equals("SUCCESS") && secondGLPostResponse.get("result").equals("SUCCESS")) {
+                cbsPosting.setStatus(1);
+                cbsPostingRepo.save(cbsPosting);
+            }
+
         }
     }
 
