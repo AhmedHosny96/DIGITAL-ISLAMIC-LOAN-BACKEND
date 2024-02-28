@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoanConfirmationDto {
 
-    private int otp;
+    private String otp;
     private String reference;
 //    private double depositAmount; // 20%
 

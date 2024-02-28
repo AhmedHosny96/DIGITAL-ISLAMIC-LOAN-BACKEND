@@ -3,67 +3,78 @@ package com.sahay.customer;
 import com.sahay.cbs.AcQuery;
 import com.sahay.cbs.QueryDepositAccountResponse;
 import com.sahay.cbs.QueryDepositBalanceResponse;
+import com.sahay.config.AsyncHttpConfig;
 import com.sahay.config.CbsClient;
 import com.sahay.customer.dto.ApproveOnBoardDto;
 import com.sahay.customer.dto.OnBoardDto;
 import com.sahay.customer.model.Customer;
+import com.sahay.customer.model.CustomerBranch;
+import com.sahay.customer.repo.BranchRepository;
 import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.exception.ApiException;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.entity.Collateral;
+import com.sahay.loan.entity.Product;
+import com.sahay.loan.entity.Request;
+import com.sahay.loan.repo.OtpRepository;
 import com.sahay.loan.service.CollateralService;
 import com.sahay.loan.service.GuarantorService;
 import com.sahay.loan.service.LoanService;
-import com.sahay.loan.entity.Request;
-import com.sahay.loan.repo.OtpRepository;
 import com.sahay.loan.service.UtilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.asynchttpclient.RequestBuilder;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.*;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
 import java.sql.*;
+import java.sql.Date;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerService {
 
-    private final RestTemplate restTemplate;
-
-    private final LoanService loanService;
-
     private final JdbcTemplate jdbcTemplate;
 
     private final CustomerRepository customerRepository;
 
+    private final BranchRepository branchRepository;
+
     private final GuarantorService guarantorService;
 
     private final CollateralService collateralService;
+
+    private final LoanService loanService;
+
+    private final AsyncHttpConfig asyncHttp;
+    private final DataSource dataSource;
+
+    private final UtilityService utilityService;
+
 
     @Autowired
     private CbsClient cbsClient;
 
     private final OtpRepository otpRepository;
 
-    private final UtilityService utilityService;
-
     private final Double PERCENTAGE = 20.0;
+
 
     private final String SAHAY_API = "http://172.16.1.17:8013/channel/request";
 
@@ -71,53 +82,36 @@ public class CustomerService {
     private final String SMS_API = "http://172.16.3.25:8013/channel/request";
 
     //TODO: CUSTOMER ONBOARDING
-//    public JSONObject customerOnboard(OnBoardDto request) {
-//        log.info("CUSTOMER ONBOARD REQUEST : {}", request);
-//        JSONObject response = new JSONObject();
-//        try {
-//            jdbcTemplate.update("{CALL CustomerOnboarding(?, ?, ?)}",
-//                    request.getAccountNumber(),
-//                    request.getComment(),
-//                    request.getCreatedBy());
-//            response.put("response", "000");
-//            response.put("responseDescription", "Customer onboarded successfully");
-//
-//            return response;
-//
-//        } catch (Exception e) {
-//            response.put("response", "999");
-//            response.put("responseDescription", e.getMessage());
-//            return response;
-//        }
-//    }
+
 
     public JSONObject customerOnboard(OnBoardDto request) {
         JSONObject response = new JSONObject();
         log.info("CUSTOMER ONBOARD REQUEST : {}", request);
         try {
             jdbcTemplate.execute((ConnectionCallback<Object>) con -> {
-                try (CallableStatement call = con.prepareCall("{CALL CustomerOnboarding(?, ?, ?, ?)}")) {
+                try (CallableStatement call = con.prepareCall("{CALL CustomerOnboarding(?, ?, ?, ? , ?)}")) {
                     call.setString(1, request.getAccountNumber());
-                    call.setString(2, String.valueOf(request.getCreatedBy()));
-                    call.setString(3, request.getComment());
-                    call.registerOutParameter(4, Types.INTEGER); // Assuming @MsgId is a VARCHAR
-                    call.executeUpdate();
+                    call.setString(2, request.getBranchCode());
+                    call.setString(3, String.valueOf(request.getCreatedBy()));
+                    call.setString(4, request.getComment());
+                    call.registerOutParameter(5, Types.INTEGER); // Assuming @MsgId is a VARCHAR
+                    call.execute();
                     // You may retrieve output parameters here if needed
 
-                    String msgId = call.getString(4);
+                    int msgId = call.getInt(5);
 
 //                    ResultSet resultSet = call.getResultSet();
                     log.info("RESULT SET : {}", msgId);
 
-                    if (msgId.equals(0)) {
+                    if (msgId == 0) {
                         response.put("response", "000");
                         response.put("responseDescription", "Customer onboarded initiated");
                         return response;
-
+                    } else {
+                        response.put("response", "004");
+                        response.put("responseDescription", "Customer already onboarded");
+                        return response;
                     }
-                    response.put("response", "004");
-                    response.put("responseDescription", "Customer already onboarded");
-                    return response;
                 }
             });
         } catch (DataAccessException e) {
@@ -129,6 +123,7 @@ public class CustomerService {
     }
 
     //TODO : APPROVE ONBOARD
+
     public JSONObject approveOnboard(ApproveOnBoardDto request) {
         JSONObject response = new JSONObject();
         request.setVerifiedDate(Date.valueOf(LocalDate.now()));
@@ -136,13 +131,14 @@ public class CustomerService {
 
         try {
             jdbcTemplate.execute((ConnectionCallback<Object>) con -> {
-                try (CallableStatement call = con.prepareCall("{CALL VerifyCustomer(?, ?, ?, ?, ?)}")) {
+                try (CallableStatement call = con.prepareCall("{CALL VerifyCustomer(?, ?, ?, ?, ?, ?)}")) {
                     call.setString(1, request.getAccountNumber());
-                    call.setString(2, String.valueOf(request.getVerifiedBy()));
-                    call.setDate(3, (Date) request.getVerifiedDate());
-                    call.setString(4, request.getComment());
-                    call.setInt(5, request.getStatus());
-                    call.executeUpdate();
+                    call.setDouble(2, request.getAppraisedAmount());
+                    call.setString(3, String.valueOf(request.getVerifiedBy()));
+                    call.setDate(4, (Date) request.getVerifiedDate());
+                    call.setString(5, request.getComment());
+                    call.setInt(6, request.getStatus());
+                    call.execute();
 
                     response.put("response", "000");
                     response.put("responseDescription", "Customer verified successfully");
@@ -155,6 +151,39 @@ public class CustomerService {
             response.put("responseDescription", e.getMessage());
         }
         return response;
+    }
+
+    // todo : GET ONBOARDED CUSTOMERS BY STATUS AND ACCOUNT
+    public Map<String, Object> getOnboardedCustomer(String accountNumber, Integer status) {
+        String sql = "{CALL GetOnboardedCustomer(?, ?)}";
+        Object[] params = {accountNumber, status};
+
+        try {
+            return jdbcTemplate.queryForMap(sql, params);
+        } catch (EmptyResultDataAccessException e) {
+            // If no customer found, return a predefined message
+            Map<String, Object> response = new HashMap<>();
+            response.put("response", "004");
+            response.put("responseDescription", "Customer not found");
+            return response;
+        }
+    }
+
+    // GET ALL SAHAY CUSTOMERS
+    public String getCustomer(String accountNumber) {
+        String sql = "{CALL GetCustomer(?, ?)}";
+        String customerJson = null;
+
+        try (CallableStatement cs = jdbcTemplate.getDataSource().getConnection().prepareCall(sql)) {
+            cs.setString(1, accountNumber);
+            cs.registerOutParameter(2, Types.NVARCHAR);
+            cs.execute();
+            customerJson = cs.getString(2);
+        } catch (SQLException | DataAccessException e) {
+            e.printStackTrace();
+        }
+
+        return customerJson;
     }
 
     public JSONObject getSahayAccount(String accountNumber) {
@@ -175,38 +204,24 @@ public class CustomerService {
             requestBody.put("timestamp", Timestamp.from(Instant.now()));
             requestBody.put("channel", "DIGITAL-LOAN");
 
-            // Create the request entity
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
-            log.info("request : {}", requestEntity);
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBody.toString());
 
-            // Make the API call
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    SAHAY_API,
-                    HttpMethod.POST,
-                    requestEntity,
-                    String.class
-            );
+            JSONObject accountLookupResponse = asyncHttp.sendRequest(requestBuilder);
 
-            log.info("ACCOUNT LOOKUP RESPONSE : {}", responseEntity);
+            log.info("ACCOUNT LOOKUP RESPONSE : {}", accountLookupResponse);
 
-            // Parse the response body as a JSONObject
-            JSONObject response = new JSONObject(responseEntity.getBody());
-
-            log.info("ACCOUNT LOOKUP RESPONSE : {}", response);
-
-            // Check if the "name" key is present in the response
-
-            if (response.getString("name") == null) {
+            if (accountLookupResponse.getString("name") == null) {
                 customResponse.put("response", "004");
                 customResponse.put("responseDescription", "Account doesn't exist!");
                 return customResponse;
             }
-            return response;
+            return accountLookupResponse;
         } catch (Exception e) {
             customResponse.put("response", "999");
             customResponse.put("responseDescription", e.getMessage());
 
-            // Handle exceptions
             return customResponse;
         }
     }
@@ -231,26 +246,14 @@ public class CustomerService {
             requestBody.put("channel", "DIGITAL-LOAN");
 
             // Create the request entity
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBody.toString());
 
-            // Make the API call
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    SAHAY_API,
-                    HttpMethod.POST,
-                    requestEntity,
-                    String.class
-            );
+            JSONObject accountBalanceResponse = asyncHttp.sendRequest(requestBuilder);
 
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                // Parse the response body as a JSONObject
-                JSONObject response = new JSONObject(responseEntity.getBody());
+            return accountBalanceResponse;
 
-                // Return the API response
-                return response;
-            } else {
-                customResponse.put("response", "999");
-                customResponse.put("responseDescription", "Error in account balance. HTTP status: " + responseEntity.getStatusCodeValue());
-            }
         } catch (Exception e) {
             customResponse.put("response", "999");
             customResponse.put("responseDescription", e.getMessage());
@@ -263,7 +266,6 @@ public class CustomerService {
     // rays
 
     public JSONObject getCBSAccount(String accountNumber) throws ApiException {
-
 
         JSONObject customResponse = new JSONObject();
 
@@ -283,7 +285,6 @@ public class CustomerService {
             customResponse.put("responseDescription", result);
             return customResponse;
         }
-
 
         log.info("CBS ACCOUNT RESPONSE : {}", response);
         return response;
@@ -337,7 +338,6 @@ public class CustomerService {
 
             boolean eligible = calculateTwentyPercent(eligibilityRequest.getAmount(), cbsBalanceResponse.getDouble("availableBalance"));
 
-
             EligibilityResponse eligibilityResponse = new EligibilityResponse("000", "success",
                     accountObject.getString("accountName"), eligibilityRequest.getAccountNumber(), eligible, null);
 
@@ -348,12 +348,14 @@ public class CustomerService {
         JSONObject accountLookupResponse = getSahayAccount(eligibilityRequest.getAccountNumber());
 
         JSONObject accountBalanceResponse = getSahayBalance(eligibilityRequest.getAccountNumber());
-//
-//        String balance = accountBalanceResponse.getString("accountBalance").substring(3);
 
         String balanceString = accountBalanceResponse.getString("accountBalance").substring(3);
         balanceString = balanceString.replace(",", ""); // Remove commas
         double balance = Double.valueOf(balanceString);
+//
+//        Product productById = loanService.getProductById(eligibilityRequest.getProductId());
+//
+//        double nonCollateralLimit = productById.getNonColateralLimit();
 
 
         // customer is eligible , if
@@ -362,26 +364,25 @@ public class CustomerService {
         // ✅ 3. customer is onboarded and apraisalAmount equals or greater than the amount customer is applying
         // ✅ 4. customer has collateral or guarantor
 
+
         boolean eligible = false;
 
-        boolean onBoardedAndHasAppraised = onBoardedAndHasAppraised(eligibilityRequest.getAccountNumber(), eligibilityRequest.getAmount());
+        boolean onBoarded = onBoardedAndHasAppraised(eligibilityRequest.getAccountNumber());
 
         boolean hasTwentyPercent = calculateTwentyPercent(eligibilityRequest.getAmount(), balance);
 
-        boolean hasGuarantor = hasGuarantor(eligibilityRequest.getAccountNumber());
+        boolean customerHasCollateral = hasCollateral(eligibilityRequest.getAccountNumber(), eligibilityRequest.getAmount());
 
 
-        if (hasTwentyPercent && (onBoardedAndHasAppraised || hasGuarantor)) {
+        if (onBoarded && customerHasCollateral && hasTwentyPercent) {
             eligible = true;
         }
-
-//        boolean eligible = calculateEligibility(accountRequest.getAmount(), Double.valueOf(balance));
 
         String uniqueReference = "";
         if (eligible) {
             // otp
-            var random = new Random();
-            int OTP = 100000 + random.nextInt(900000); // Range from 100000 to 999999
+
+            String OTP = utilityService.generateOTP();
             var otpModel = new Request();
 
             uniqueReference = utilityService.generateReference();
@@ -395,10 +396,9 @@ public class CustomerService {
 //            String message = " " + OTP;
 
             LocalTime currentTime = LocalTime.now();
-            String time = String.format("%02d:%02d", currentTime.getHour(), currentTime.getMinute());
 
             String loanMessagePattern = "Dear customer, you have initiated a loan application for ETB {0} as at {1} - {2} from CommercePal. To proceed with processing it, we will withhold ETB {3}. Enter this OTP {4} to confirm.";
-            String message = MessageFormat.format(loanMessagePattern, eligibilityRequest.getAmount(), LocalDate.now(), String.format("%02d:%02d", currentTime.getHour(), currentTime.getMinute()), eligibilityRequest.getAmount() * 0.02, String.valueOf(OTP));
+            String message = MessageFormat.format(loanMessagePattern, eligibilityRequest.getAmount(), LocalDate.now(), String.format("%02d:%02d", currentTime.getHour(), currentTime.getMinute()), eligibilityRequest.getAmount() * 0.2, String.valueOf(OTP));
 
             sendConfirmationMessage(eligibilityRequest.getAccountNumber(), message);
 
@@ -414,37 +414,31 @@ public class CustomerService {
         return balance >= requestAmount * PERCENTAGE / 100;
     }
 
-    // check if customer is onboarded has appraised amount greater or equal to principal amount
-    public boolean onBoardedAndHasAppraised(String customerAccount, double principalAmount) {
+    public boolean onBoardedAndHasAppraised(String customerAccount) {
         Optional<Customer> optionalCustomer = customerRepository.findByCustomerAccount(customerAccount);
-        return optionalCustomer.isPresent() && optionalCustomer.get().getAppraisedAmount() >= principalAmount;
+
+        return optionalCustomer.isPresent();
     }
 
-    // check if customer has collateral
+    // loan > 30K
 
-    public boolean hasCollateral(String customerAccount) throws CustomException {
-        
+    public boolean hasCollateral(String customerAccount, Double principalAmount) throws CustomException {
+
         Customer customer = customerRepository.findByCustomerAccount(customerAccount).get();
 
-        Collateral collateralByCustomerId = collateralService.getCollateralByCustomerId(Math.toIntExact(customer.getId()));
+        Collateral collateralByNumber = collateralService.getCollateralByCustomerId(customer.getId());
 
-        if (collateralByCustomerId == null) {
-            return false;
-        }
-        return true;
+        return collateralByNumber != null && principalAmount <= collateralByNumber.getValue() ? true : false;
+
     }
 
-
-    // check if customer has guarantor
-    public boolean hasGuarantor(String customerAccount) {
-        return guarantorService.getGuarantorByCustomerAccount(customerAccount)
-                .map(guarantor -> true)
-                .orElse(false);
-    }
-
+//    public boolean hasGuarantor(String customerAccount) {
+//        return guarantorService.getGuarantorByCustomerAccount(customerAccount)
+//                .map(guarantor -> true)
+//                .orElse(false);
+//    }
 
     // todo : SEND confirmation with OTP
-
     public void sendConfirmationMessage(String phoneNumber, String message) {
 
         try {
@@ -466,18 +460,36 @@ public class CustomerService {
             jsonPayload.put("accessPassword", "");
             jsonPayload.put("toMsisdn", phoneNumber);
             jsonPayload.put("message", message);
-            jsonPayload.put("timestamp", "20200101120000");
+            jsonPayload.put("timestamp", Timestamp.from(Instant.now()));
             jsonPayload.put("channel", "PORTAL");
-            HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload.toString(), headers);
 
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(SMS_API, requestEntity, String.class);
-            // Handle the response as needed
-            String responseBody = responseEntity.getBody();
-            System.out.println("API Response: " + responseBody);
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SMS_API)
+                    .setBody(jsonPayload.toString());
+
+            JSONObject smsResponse = asyncHttp.sendRequest(requestBuilder);
+            log.info("SMS RESPONSE : {}", smsResponse);
+
         } catch (Exception e) {
             // Handle any exceptions that might occur during the API call
             e.printStackTrace();
         }
+    }
+
+    // get customer branch
+
+    public CustomerBranch getCustomerBranchByCode(String branchCode) throws CustomException {
+        Optional<CustomerBranch> byBranchCode = branchRepository.findByBranchCode(branchCode);
+
+        if (!byBranchCode.isPresent()) {
+            throw new CustomException("Branch code does not exits");
+        }
+        return byBranchCode.get();
+    }
+
+    public List<CustomerBranch> getAllBranches() {
+        List<CustomerBranch> all = branchRepository.findAll();
+        return all;
     }
 
 

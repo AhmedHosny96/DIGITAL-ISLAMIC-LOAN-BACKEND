@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class OnBoardDto {
 
     private String accountNumber;
+    private String branchCode;
     private String comment;
-    private int createdBy;
+    private String createdBy;
 }

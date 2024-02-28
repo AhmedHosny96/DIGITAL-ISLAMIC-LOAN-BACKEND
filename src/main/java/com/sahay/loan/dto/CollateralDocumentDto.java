@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class CollateralDocumentDto {
 
-    private Long collateralId;
+    private Integer collateralId;
     private MultipartFile document;
     private String description;
 

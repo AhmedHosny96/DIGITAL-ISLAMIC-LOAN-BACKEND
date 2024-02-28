@@ -38,5 +38,22 @@ public class UtilityService {
         return otpRepository.findParkReferenceByReference(reference).get();
     }
 
+    public String generateOTP() {
+        String characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        int length = 6;
+
+        StringBuilder otp = new StringBuilder();
+
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+
+            otp.append(characters.charAt(index));
+        }
+
+        return otp.toString();
+    }
+
 
 }

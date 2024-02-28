@@ -1,6 +1,8 @@
 package com.sahay.loan.service;
 
 
+import com.sahay.customer.model.Customer;
+import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.dto.CustomResponse;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.dto.ApproveCollateralDto;
@@ -11,35 +13,34 @@ import com.sahay.loan.entity.CollateralImages;
 import com.sahay.loan.repo.CollateralImagesRepo;
 import com.sahay.loan.repo.CollateralRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CollateralService {
     private final ModelMapper modelMapper;
 
     private final CollateralRepository collateralRepository;
 
     private final CollateralImagesRepo collateralImagesRepo;
+    private final CustomerRepository customerRepository;
 
     // get all
-
     public List<Collateral> getAllCollaterals() {
         return collateralRepository.findAll();
     }
-
 
     // create
     public CustomResponse createCollateral(CreateCollateralDto collateralDto) {
@@ -95,7 +96,7 @@ public class CollateralService {
                         .build();
             }
             // Save file to the file system
-            String uploadDir = "D:\\loan-docs\\"; // Specify your upload directory
+            String uploadDir = "D:\\Apps\\loan-docs"; // Specify your upload directory
             String fileName = System.currentTimeMillis() + "_" + documentDto.getDocument().getOriginalFilename();
             Path filePath = Paths.get(uploadDir, fileName);
             Files.copy(documentDto.getDocument().getInputStream(), filePath);
@@ -103,9 +104,8 @@ public class CollateralService {
             // Save file path in the database
             CollateralImages collateralImages = CollateralImages.builder()
                     .collateralId(documentDto.getCollateralId())
-                    .document(filePath.toString())
+                    .document("/" + uploadDir + "/" + fileName) // Adjust the path to start with a slash
                     .build();
-
             collateralImagesRepo.save(collateralImages);
 
             return CustomResponse.builder()
@@ -115,13 +115,13 @@ public class CollateralService {
         } catch (IOException e) {
             return CustomResponse.builder()
                     .response("999")
-                    .responseDescription("Failed to upload collateral documents")
+                    .responseDescription("Failed to upload collateral documents : " + e.getMessage())
                     .build();
         }
     }
     // approve or reject , status , 1
 
-    public CustomResponse approveCollateral(Long collateralId, ApproveCollateralDto approvalDto) {
+    public CustomResponse approveCollateral(Integer collateralId, ApproveCollateralDto approvalDto) {
         Optional<Collateral> optionalCollateral = collateralRepository.findById(collateralId);
 
         if (!optionalCollateral.isPresent()) {
@@ -162,5 +162,26 @@ public class CollateralService {
         return collateralRepository.findByCustomerId(customerId).get();
     }
 
+    public Collateral getCollateralByPhone(String phoneNumber) throws CustomException {
+        // Find the customer by phone number
+
+        log.info("PHONE : {}", phoneNumber);
+        Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(phoneNumber);
+        
+        if (!byCustomerAccount.isPresent()) {
+            throw new CustomException("Customer account does not exist");
+        }
+        // Retrieve the customer ID
+        int customerId = byCustomerAccount.get().getId();
+
+        // Find collateral by customer ID
+        Optional<Collateral> byCustomerId = collateralRepository.findByCustomerId(customerId);
+
+        if (!byCustomerId.isPresent()) {
+            throw new CustomException("Collateral not found for customer");
+        }
+
+        return byCustomerId.get();
+    }
 
 }

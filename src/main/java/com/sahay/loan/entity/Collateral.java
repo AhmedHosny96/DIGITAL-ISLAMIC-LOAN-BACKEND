@@ -18,10 +18,10 @@ import java.time.LocalDateTime;
 public class Collateral {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "CustomerId")
-    private Long customerId;
+    private Integer customerId;
 
     @Column(name = "CollateralType")
     private String collateralType;

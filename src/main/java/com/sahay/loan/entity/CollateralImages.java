@@ -21,7 +21,7 @@ public class CollateralImages {
     private Long id;
 
     @Column(name = "CollateralId")
-    private Long collateralId;
+    private Integer collateralId;
 
     @Column(name = "Document")
     private String document;

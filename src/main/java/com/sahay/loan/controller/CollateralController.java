@@ -1,6 +1,7 @@
 package com.sahay.loan.controller;
 
 
+import com.sahay.customer.model.Customer;
 import com.sahay.dto.CustomResponse;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.dto.ApproveCollateralDto;
@@ -10,6 +11,7 @@ import com.sahay.loan.dto.LoanConfirmationDto;
 import com.sahay.loan.entity.Collateral;
 import com.sahay.loan.service.CollateralService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/collateral")
 @RequiredArgsConstructor
+@Slf4j
 public class CollateralController {
 
     private final CollateralService collateralService;
@@ -32,19 +35,21 @@ public class CollateralController {
             List<Collateral> allCollaterals = collateralService.getAllCollaterals();
             return new ResponseEntity<>(allCollaterals, HttpStatus.OK);
         } catch (Exception e) {
+
+            log.info("ERROR OCCURED : {}", e.getMessage());
             return new ResponseEntity<>("Error retrieving product setup", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping()
-    public ResponseEntity<?> getCollateralByNumber(@RequestParam("number") String number) {
-        try {
-            Collateral collateralByNumber = collateralService.getCollateralByNumber(number);
-            return new ResponseEntity<>(collateralByNumber, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Error retrieving product setup", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @GetMapping("/customer")
+//    public ResponseEntity<?> getCollateralByPhoneNumber(@RequestParam("phoneNumber") String phoneNumber) {
+//        try {
+//            Collateral collateral = collateralService.getCollateralByPhone(phoneNumber);
+//            return new ResponseEntity<>(collateral, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     // create collateral alone
     @PostMapping()
@@ -55,7 +60,7 @@ public class CollateralController {
 
     // approve or reject
     @PutMapping("/{collateralId}")
-    public ResponseEntity<?> approveCollateral(@PathVariable Long collateralId, @RequestBody ApproveCollateralDto approveCollateralDto) {
+    public ResponseEntity<?> approveCollateral(@PathVariable Integer collateralId, @RequestBody ApproveCollateralDto approveCollateralDto) {
         try {
             CustomResponse collateral = collateralService.approveCollateral(collateralId, approveCollateralDto);
             return new ResponseEntity<>(collateral, HttpStatus.OK);
@@ -66,7 +71,7 @@ public class CollateralController {
 
     // collateral documents
     @PostMapping("/upload")
-    public ResponseEntity<CustomResponse> uploadCollateralDocuments(@RequestParam("document") MultipartFile document, @RequestParam("collateralId") Long collateralId, @RequestParam("description") String description) {
+    public ResponseEntity<CustomResponse> uploadCollateralDocuments(@RequestParam("document") MultipartFile document, @RequestParam("collateralId") Integer collateralId, @RequestParam("description") String description) {
         // Construct CollateralDocumentDto using the file and collateralId
         CollateralDocumentDto documentDto = new CollateralDocumentDto();
         documentDto.setDocument(document);

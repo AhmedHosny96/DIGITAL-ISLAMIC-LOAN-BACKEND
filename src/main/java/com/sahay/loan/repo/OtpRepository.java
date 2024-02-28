@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface OtpRepository extends JpaRepository<Request, Integer> {
 
 
-    Optional<Request> findByReferenceAndOtp(String accountNumber, int otp);
+    Optional<Request> findByReferenceAndOtp(String accountNumber, String otp);
 
     Optional<Request> findByReference(String reference);
 
@@ -20,6 +20,6 @@ public interface OtpRepository extends JpaRepository<Request, Integer> {
     Optional<String> findParkReferenceByReference(@Param("reference") String reference);
 
 
-    Optional<Request> findRequestByReference(String reference);
+    Optional<Request> findByStatusAndReference(int status, String reference);
 
 }

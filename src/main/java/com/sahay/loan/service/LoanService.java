@@ -7,26 +7,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sahay.cbs.PostGLToGLTransferResponse;
 import com.sahay.cbs.TxRequest;
+import com.sahay.config.AsyncHttpConfig;
 import com.sahay.config.CbsClient;
+import com.sahay.customer.CustomerService;
+import com.sahay.customer.model.Customer;
+import com.sahay.customer.model.CustomerBranch;
+import com.sahay.customer.repo.BranchRepository;
+import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.exception.ApiException;
 import com.sahay.loan.dto.*;
+import com.sahay.loan.entity.Collateral;
+import com.sahay.loan.entity.CbsPosting;
+import com.sahay.loan.entity.Product;
 import com.sahay.loan.entity.Request;
+import com.sahay.loan.repo.CollateralRepository;
+import com.sahay.loan.repo.CbsPostingRepo;
 import com.sahay.loan.repo.OtpRepository;
+import com.sahay.loan.repo.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.asynchttpclient.RequestBuilder;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,16 +57,45 @@ public class LoanService {
 
     private final Double LOAN_LIMIT = 100_000.0;
 
-    private final RestTemplate restTemplate;
-
     private final OtpRepository otpRepository;
+
+    private final ProductRepository productRepository;
+
+    private final CollateralRepository collateralRepository;
+
+    private final CbsPostingRepo cbsPostingRepo;
 
     private final UtilityService utilityService;
 
+    private final CustomerRepository customerRepository;
+
+    private final BranchRepository branchRepository;
+
+    private final AsyncHttpConfig asyncHttp;
+
+    @Value("${cbs.murabaha-principal-ledger}")
+    private String E_MURABAHA_PRINCIPAL_LEDGER;
+
+    @Value("${cbs.murabaha-pool-account}")
+    private String E_MURABAHA_POOL_ACCOUNT;
+
+    @Value("${cbs.murabaha-profit-ledger}")
+    private String E_MURABAHA_PROFIT_LEDGER;
+
+    @Value("${cbs.murabaha-profitable-recievable-ledger}")
+    private String E_MURABAHA_PROFIT_RECEIVABLE;
+
+
+    @Value("${cbs.currency}")
+    private String CURRENCY;
+
+
     @Autowired
     private CbsClient cbsClient;
-    
+
     private final JdbcTemplate jdbcTemplate;
+    private final CollateralService collateralService;
+
 
 //    private final AccountService accountService;
 
@@ -81,6 +128,11 @@ public class LoanService {
         });
     }
 
+    // get loan product by id
+    public Product getProductById(int id) {
+        return productRepository.findById(id).get();
+    }
+
     // TODO : LOAN CONFIRMATION
     public JSONObject confirmLoanApplication(LoanConfirmationDto confirmationRequest) {
         var customResponse = new JSONObject();
@@ -91,14 +143,15 @@ public class LoanService {
                     double principalAmount = otpEntity.getPrincipalAmount();
                     String accountNumber = otpEntity.getAccountNumber();
 
-                    double twentyPercent = principalAmount * 0.02;
+                    double twentyPercent = principalAmount * 0.2;
 
                     log.info("20% : {}", twentyPercent);
 //                    String reference = generateReference();
 
-                    JSONObject heldResponse = holdTheAmount(accountNumber, twentyPercent, confirmationRequest.getReference());
+                    JSONObject heldResponse = holdTheAmount(accountNumber, principalAmount, twentyPercent, confirmationRequest.getReference());
                     log.info("NEW HOLD RESPONSE : {}", heldResponse);
                     String parkTransactionId = heldResponse.getString("reference");
+                    log.info("HELD RESPONSE : {}", heldResponse);
                     log.info("HELD RESPONSE : {}", heldResponse);
                     // update otp record
 //                    otpEntity.setReference(reference);
@@ -136,6 +189,13 @@ public class LoanService {
 
             Request request = otpRepository.findByReference(loanApplicationDto.getReference()).get();
 
+            request.setStatus(2);
+
+            otpRepository.save(request);
+
+
+            // get collateral by id
+
             String accountNumber = request.getAccountNumber();
             double principalAmount = request.getPrincipalAmount();
 
@@ -160,38 +220,58 @@ public class LoanService {
             log.info("LOAN APPLICATION REQUEST : {}", requestBodyJson);
 
 
-            // Create the HTTP entity with headers and body
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson.toString(), headers);
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(SAHAY_API, requestEntity, String.class);
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBodyJson.toString());
 
-            JSONObject responseBodyJson = new JSONObject(responseEntity.getBody());
+            JSONObject createLoanResponse = asyncHttp.sendRequest(requestBuilder);
 
-            log.info("LOAN APPLICATION RESPONSE : {}", responseBodyJson);
+            log.info("LOAN APPLICATION RESPONSE : {}", createLoanResponse);
 
-            String response = responseBodyJson.getString("response");
-
+            String response = createLoanResponse.getString("response");
 
             if (!response.equals("000")) {
                 customResponse.put("response", response);
-                customResponse.put("responseDescription", responseBodyJson.getString("responseDescription"));
+                customResponse.put("responseDescription", createLoanResponse.getString("responseDescription"));
                 return customResponse;
             }
 
             customResponse.put("response", "000");
             customResponse.put("responseDescription", "Loan application completed successfully");
-//            customResponse.put("accountNumber", loanApplicationRequest.getAccountNumber());
-//            customResponse.put("amount", loanApplicationRequest.getAmount());
+            customResponse.put("accountNumber", accountNumber);
+            customResponse.put("principalAmount", principalAmount);
             customResponse.put("reference", loanApplicationDto.getReference());
 
+            // GET THE BRANCH PREFIX
+
+            String PREFIX = getGlPrefix(request.getAccountNumber());
+
+            log.info("BRANCH PREFIX : {}", PREFIX);
+
+            log.info("GL ACCOUNT : {}", PREFIX + E_MURABAHA_POOL_ACCOUNT);
+
             // post to CBS GL
-//            TxRequest txRequest = new TxRequest();
-//            txRequest.setAmount(BigDecimal.valueOf(loanApplicationRequest.getAmount()));
-//            txRequest.setCreditAccount("cbs-murabaha-gl");
-//            txRequest.setDebitAccount("digital-loan-gl");
-//            txRequest.setCurrency("ETB");
-//            txRequest.setNarration("FROM DIGITAL LOAN SERVICE");
-//
-//            postToCbsGl(txRequest);
+            TxRequest txRequest = new TxRequest();
+            txRequest.setAmount(BigDecimal.valueOf(principalAmount));
+            txRequest.setCreditAccount(E_MURABAHA_POOL_ACCOUNT);
+            txRequest.setDebitAccount(E_MURABAHA_PRINCIPAL_LEDGER);
+            txRequest.setCurrency(CURRENCY);
+            txRequest.setNarration("FROM DIGITAL LOAN SERVICE");
+            txRequest.setReference(UUID.randomUUID().toString());
+
+            JSONObject cbsPostResponse = postToCbsGl(txRequest);
+
+            log.info("CBS POST RESPONSE : {}", cbsPostResponse);
+            // pick request with status 0 and update the collater
+
+            otpRepository.findByStatusAndReference(1, loanApplicationDto.getReference());
+            Collateral collateralByPhone = collateralService.getCollateralByPhone(request.getAccountNumber());
+
+            collateralByPhone.setStatus(3);
+
+            log.info("COLLATERAL STATUS : {}", collateralByPhone.getStatus());
+
+            collateralRepository.save(collateralByPhone);
 
             return customResponse;
 
@@ -202,16 +282,16 @@ public class LoanService {
 
         } catch (Exception e) {
             // Handle other exceptions
+            // Handle other exceptions
             customResponse.put("response", "999"); // or another appropriate error code
             customResponse.put("responseDescription", e.getMessage());
             return customResponse;
         }
 
-
     }
 
 
-    public JSONObject holdTheAmount(String phoneNumber, double amount, String loanTransactionId) {
+    public JSONObject holdTheAmount(String phoneNumber, double loanAmount, double parkAmount, String loanTransactionId) {
 
         var customResponse = new JSONObject();
         try {
@@ -227,38 +307,37 @@ public class LoanService {
             requestBodyJson.put("msisdn", phoneNumber);
             requestBodyJson.put("customerAccount", phoneNumber);
             requestBodyJson.put("transactionType", "LPRKT");
-            requestBodyJson.put("amount", String.valueOf(amount));
+            requestBodyJson.put("parkAmount", String.valueOf(parkAmount));
+            requestBodyJson.put("loanAmount", String.valueOf(loanAmount));
             requestBodyJson.put("timestamp", Timestamp.from(Instant.now()));
             requestBodyJson.put("channel", "LMS");
 
             log.info("PARK REQUEST : {}", requestBodyJson);
 
             // Convert JSON object to string
-            String requestBody = requestBodyJson.toString();
 
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBodyJson.toString());
 
-            // Make the HTTP POST request
-            ResponseEntity<String> responseEntity = restTemplate.exchange(SAHAY_API, HttpMethod.POST, requestEntity, String.class);
-
+            JSONObject parkResponse = asyncHttp.sendRequest(requestBuilder);
             // Print the response
-            var responseBody = new JSONObject(responseEntity.getBody());
+            log.info("PARK RESPONSE : {}", parkResponse);
 
-            log.info("PARK RESPONSE : {}", responseBody);
-
-            String response = responseBody.getString("response");
+            String response = parkResponse.getString("response");
 
             if (!response.equals("000")) {
                 customResponse.put("response", response);
-                customResponse.put("responseDescription", responseBody.getString("responseDescription"));
+                customResponse.put("responseDescription", parkResponse.getString("responseDescription"));
                 return customResponse;
             }
 
             customResponse.put("response", "000");
             customResponse.put("responseDescription", "Amount successfully held on the account.");
-            customResponse.put("holdAmount", amount);
+            customResponse.put("holdAmount", parkAmount);
+            customResponse.put("loanAmount", loanAmount);
             customResponse.put("accountNumber", phoneNumber);
-            customResponse.put("reference", responseBody.getString("transactionRef"));
+            customResponse.put("reference", parkResponse.getString("transactionRef"));
             return customResponse;
 
         } catch (HttpClientErrorException e) {
@@ -276,21 +355,17 @@ public class LoanService {
         }
     }
 
-
     public JSONObject cancelApplication(CancelLoanDto cancelLoanDto) {
         var customResponse = new JSONObject();
 
         try {
             Request request = otpRepository.findByReference(cancelLoanDto.getReference()).get();
 
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
             JSONObject requestBodyJson = new JSONObject();
             requestBodyJson.put("username", "channel");
             requestBodyJson.put("password", "$_@C0NNEKT");
             requestBodyJson.put("messageType", "1200");
-            requestBodyJson.put("serviceCode", "3001");
+            requestBodyJson.put("serviceCode", "3003");
             requestBodyJson.put("transactionId", "digital-loan-" + UUID.randomUUID());
             requestBodyJson.put("parkTransactionId", utilityService.getParkReferenceByReference(cancelLoanDto.getReference()));
             requestBodyJson.put("comments", cancelLoanDto.getReason());
@@ -302,22 +377,20 @@ public class LoanService {
 
             log.info("UNPARK REQUEST : {}", requestBodyJson);
 
-            String requestBody = requestBodyJson.toString();
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBodyJson.toString());
 
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
-
-            // Make the HTTP POST request
-            ResponseEntity<String> responseEntity = restTemplate.exchange(SAHAY_API, HttpMethod.POST, requestEntity, String.class);
+            JSONObject unParkResponse = asyncHttp.sendRequest(requestBuilder);
 
             // Print the response
-            var responseBody = new JSONObject(responseEntity.getBody());
-            String response = responseBody.getString("response");
+            String response = unParkResponse.getString("response");
 
-            log.info("UNPARK RESPONSE : {}", responseBody);
+            log.info("UNPARK RESPONSE : {}", unParkResponse);
 
             if (!response.equals("000")) {
                 customResponse.put("response", response);
-                customResponse.put("responseDescription", responseBody.getString("responseDescription"));
+                customResponse.put("responseDescription", unParkResponse.getString("responseDescription"));
                 return customResponse;
             }
 
@@ -357,7 +430,7 @@ public class LoanService {
             requestBodyJson.put("username", "channel");
             requestBodyJson.put("password", "$_@C0NNEKT");
             requestBodyJson.put("messageType", "1200");
-            requestBodyJson.put("serviceCode", "3003");
+            requestBodyJson.put("serviceCode", "3001");
             requestBodyJson.put("transactionId", "digital-loan-" + UUID.randomUUID());
             requestBodyJson.put("parkTransactionId", utilityService.getParkReferenceByReference(approveCancelDto.getReference()));
             requestBodyJson.put("comments", approveCancelDto.getComments());
@@ -367,20 +440,18 @@ public class LoanService {
 
             log.info("REVERSAL APPROVAL REQUEST : {}", requestBodyJson);
 
-            String requestBody = requestBodyJson.toString();
+            RequestBuilder requestBuilder = new RequestBuilder("POST")
+                    .setUrl(SAHAY_API)
+                    .setBody(requestBodyJson.toString());
 
-            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
-            // Make the HTTP POST request
-            ResponseEntity<String> responseEntity = restTemplate.exchange(SAHAY_API, HttpMethod.POST, requestEntity, String.class);
-            // Print the response
-            var responseBody = new JSONObject(responseEntity.getBody());
-            String response = responseBody.getString("response");
+            JSONObject reversalResponse = asyncHttp.sendRequest(requestBuilder);
+            String response = reversalResponse.getString("response");
 
-            log.info("PARK REVERSAL RESPONSE : {}", responseBody);
+            log.info(" REVERSAL APPROVAL RESPONSE : {}", reversalResponse);
 
             if (!response.equals("000")) {
                 customResponse.put("response", response);
-                customResponse.put("responseDescription", responseBody.getString("error_data"));
+                customResponse.put("responseDescription", reversalResponse.getString("error_data"));
                 return customResponse;
             }
 
@@ -427,13 +498,15 @@ public class LoanService {
     }
 
 
-    // todo : perform GL to GL
+    // todo : perform GL to GL for loan creation and loan repayment
+
     public JSONObject postToCbsGl(TxRequest txRequest) throws ApiException {
         var customResponse = new JSONObject();
 
         PostGLToGLTransferResponse postGLToGLTransferResponse = cbsClient.postGlToGl(txRequest);
         JSONObject postGlResponse = new JSONObject(postGLToGLTransferResponse).getJSONObject("return");
         String result = postGlResponse.getString("result");
+
         if (!result.equals("SUCCESS")) {
             customResponse.put("response", "004");
             customResponse.put("responseDescription", result);
@@ -443,8 +516,58 @@ public class LoanService {
         return postGlResponse;
     }
 
+    // todo : GET BRANCH PREFIX BY CODE
 
-    // todo : LOAN RELATED UTILITIES
+    public String getGlPrefix(String accountNumber) {
+        Optional<Customer> byCustomerAccount =
+                customerRepository.findByCustomerAccount(accountNumber);
+
+        Customer customer = byCustomerAccount.get();
+
+        String branchCode = customer.getBranchCode();
+
+        CustomerBranch customerBranch = branchRepository.findByBranchCode(branchCode).get();
+
+        return customerBranch.getPrefix();
+    }
+
+    // TODO REPAYMENT POST TO CBS
+
+
+
+    public void repaymentPostToCbs() throws ApiException {
+
+        CbsPosting cbsPosting = cbsPostingRepo.findTopByStatus(0).get();
+        // first post
+        TxRequest repaymentFirstPostRequest = new TxRequest();
+        repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
+
+        repaymentFirstPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
+        repaymentFirstPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
+        repaymentFirstPostRequest.setCurrency(CURRENCY);
+        repaymentFirstPostRequest.setCreditAccount(E_MURABAHA_PRINCIPAL_LEDGER);
+        repaymentFirstPostRequest.setDebitAccount(E_MURABAHA_POOL_ACCOUNT);
+
+        JSONObject firstGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+
+        // second
+        TxRequest repaymentSecondPostRequest = new TxRequest();
+        repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
+
+        repaymentSecondPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
+        repaymentSecondPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
+        repaymentSecondPostRequest.setCurrency(CURRENCY);
+        repaymentSecondPostRequest.setCreditAccount(E_MURABAHA_PROFIT_RECEIVABLE);
+        repaymentSecondPostRequest.setDebitAccount(E_MURABAHA_PROFIT_LEDGER);
+
+        JSONObject secondGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+
+        // if both success update the status to 1
+        if (firstGLPostResponse.get("response").equals("000") && secondGLPostResponse.get("response").equals("000")) {
+            cbsPosting.setStatus(1);
+            cbsPostingRepo.save(cbsPosting);
+        }
+    }
 
 
 }

@@ -18,7 +18,7 @@ public class Customer {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "CustomerAccount")
     private String customerAccount;
@@ -32,6 +32,9 @@ public class Customer {
     @Column(name = "LastName")
     private String lastName;
 
+    @Column(name = "BranchCode")
+    private String BranchCode;
+
     @Column(name = "AggregateCredits")
     private double aggregateCredits;
 
@@ -39,7 +42,7 @@ public class Customer {
     private double aggregateDebits;
 
     @Column(name = "ScoreLevel")
-    private int scoreLevel;
+    private String scoreLevel;
 
     @Column(name = "AppraisedAmount")
     private double appraisedAmount;

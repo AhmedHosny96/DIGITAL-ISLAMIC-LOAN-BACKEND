@@ -14,6 +14,7 @@ import java.util.Date;
 public class ApproveOnBoardDto {
 
     private String accountNumber;
+    private double appraisedAmount;
     private int verifiedBy;
     private Date verifiedDate;
     private String comment;

@@ -20,7 +20,7 @@ public class Request {
     @Column(name = "Id")
     private int id;
     @Column(name = "Otp")
-    private int otp;
+    private String otp;
     @Column(name = "AccountNumber")
     private String accountNumber;
     @Column(name = "PrincipleAmount")
