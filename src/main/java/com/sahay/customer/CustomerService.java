@@ -14,12 +14,10 @@ import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.exception.ApiException;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.entity.Collateral;
-import com.sahay.loan.entity.Product;
 import com.sahay.loan.entity.Request;
 import com.sahay.loan.repo.OtpRepository;
 import com.sahay.loan.service.CollateralService;
 import com.sahay.loan.service.GuarantorService;
-import com.sahay.loan.service.LoanService;
 import com.sahay.loan.service.UtilityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +58,7 @@ public class CustomerService {
 
     private final CollateralService collateralService;
 
-    private final LoanService loanService;
+//    private final LoanService loanService;
 
     private final AsyncHttpConfig asyncHttp;
     private final DataSource dataSource;
@@ -367,7 +365,7 @@ public class CustomerService {
 
         boolean eligible = false;
 
-        boolean onBoarded = onBoardedAndHasAppraised(eligibilityRequest.getAccountNumber());
+        boolean onBoarded = onBoarded(eligibilityRequest.getAccountNumber());
 
         boolean hasTwentyPercent = calculateTwentyPercent(eligibilityRequest.getAmount(), balance);
 
@@ -391,6 +389,7 @@ public class CustomerService {
             otpModel.setAccountNumber(eligibilityRequest.getAccountNumber());
             otpModel.setReference(uniqueReference);
             otpModel.setCreatedAt(LocalDateTime.now());
+            otpModel.setProductId(eligibilityRequest.getProductId());
             otpRepository.save(otpModel);
             // send confirmation message to client
 //            String message = " " + OTP;
@@ -414,8 +413,12 @@ public class CustomerService {
         return balance >= requestAmount * PERCENTAGE / 100;
     }
 
-    public boolean onBoardedAndHasAppraised(String customerAccount) {
+    public boolean onBoarded(String customerAccount) throws CustomException, ApiException {
         Optional<Customer> optionalCustomer = customerRepository.findByCustomerAccount(customerAccount);
+
+        if (!optionalCustomer.isPresent()) {
+            throw new CustomException("Customer not onboarded ,  Kindly visit nearest Rays MFI branch");
+        }
 
         return optionalCustomer.isPresent();
     }
@@ -424,9 +427,14 @@ public class CustomerService {
 
     public boolean hasCollateral(String customerAccount, Double principalAmount) throws CustomException {
 
-        Customer customer = customerRepository.findByCustomerAccount(customerAccount).get();
+        Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(customerAccount);
 
-        Collateral collateralByNumber = collateralService.getCollateralByCustomerId(customer.getId());
+
+        Collateral collateralByNumber = collateralService.getCollateralByCustomerId(byCustomerAccount.get().getId());
+
+        if (collateralByNumber == null) {
+            throw new CustomException("Customer has no attached collateral , Kindly visit nearest Rays MFI branch");
+        }
 
         return collateralByNumber != null && principalAmount <= collateralByNumber.getValue() ? true : false;
 
@@ -490,6 +498,18 @@ public class CustomerService {
     public List<CustomerBranch> getAllBranches() {
         List<CustomerBranch> all = branchRepository.findAll();
         return all;
+    }
+
+
+    public Customer getCustomerByAccountNumber(String accountNumber) throws CustomException {
+
+        Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(accountNumber);
+
+        if (!byCustomerAccount.isPresent()) {
+            throw new CustomException("Customer doesnt exist");
+        }
+
+        return byCustomerAccount.get();
     }
 
 

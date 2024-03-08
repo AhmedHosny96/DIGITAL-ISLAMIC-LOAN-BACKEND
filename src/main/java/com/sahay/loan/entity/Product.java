@@ -39,7 +39,7 @@ public class Product {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Column(name = "RunningBalance")
     private Double runningBalance;
-    @Column(name = "NonCollateralLimit")
+    @Column(name = "NonColaretalLimit")
     private double nonColateralLimit;
     @Column(name = "CreatedBy")
     private Long createdBy;

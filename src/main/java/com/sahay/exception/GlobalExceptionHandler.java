@@ -31,9 +31,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<CustomResponse> customException(PhoneNumberTakenException exception, WebRequest request) {
+    public ResponseEntity<CustomResponse> customException(CustomException exception, WebRequest request) {
         var errorMessage = new CustomResponse("004", exception.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        return ResponseEntity.status(HttpStatus.OK).body(errorMessage);
 
     }
 

@@ -23,6 +23,10 @@ public class Request {
     private String otp;
     @Column(name = "AccountNumber")
     private String accountNumber;
+
+    @Column(name = "ProductId")
+    private Integer productId;
+
     @Column(name = "PrincipleAmount")
     private double principalAmount;
     @Column(name = "DepositAmount")

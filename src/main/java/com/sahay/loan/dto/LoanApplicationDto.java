@@ -16,11 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class LoanApplicationDto {
 
-
-    private String customerName;
     private String reference; // can be park
-    private int productId;
-    private int period;
     private LocalDate createDate;
 
 }

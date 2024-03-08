@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -68,6 +69,8 @@ public class LoanService {
 
     private final UtilityService utilityService;
 
+    private final CustomerService customerService;
+
     private final CustomerRepository customerRepository;
 
     private final BranchRepository branchRepository;
@@ -86,7 +89,6 @@ public class LoanService {
     @Value("${cbs.murabaha-profitable-recievable-ledger}")
     private String E_MURABAHA_PROFIT_RECEIVABLE;
 
-
     @Value("${cbs.currency}")
     private String CURRENCY;
 
@@ -101,7 +103,6 @@ public class LoanService {
 //    private final AccountService accountService;
 
     // TODO : LOAN PRODUCTS
-
     public List<Object> getLoanProducts() {
         String procedureCall = "{CALL GetProductSetupAsJSON}";
 
@@ -151,9 +152,7 @@ public class LoanService {
 
                     JSONObject heldResponse = holdTheAmount(accountNumber, principalAmount, twentyPercent, confirmationRequest.getReference());
                     log.info("NEW HOLD RESPONSE : {}", heldResponse);
-                    String parkTransactionId = heldResponse.getString("reference");
-                    log.info("HELD RESPONSE : {}", heldResponse);
-                    log.info("HELD RESPONSE : {}", heldResponse);
+                    String parkTransactionId = heldResponse.optString("parkReference");
                     // update otp record
 //                    otpEntity.setReference(reference);
 //                    otpEntity.setPrincipalAmount();
@@ -186,40 +185,40 @@ public class LoanService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             // Create request body using JSONObject
-
-
             Request request = otpRepository.findByReference(loanApplicationDto.getReference()).get();
-
             request.setStatus(2);
-
             otpRepository.save(request);
-
-
             // get collateral by id
 
             String accountNumber = request.getAccountNumber();
             double principalAmount = request.getPrincipalAmount();
+
+            Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(accountNumber);
+
+
+            String customerName = customerByAccountNumber.getFirstName() + " " + customerByAccountNumber.getMiddleName() + " " + customerByAccountNumber.getLastName();
+            Product productById = getProductById(request.getProductId());
+
 
             JSONObject requestBodyJson = new JSONObject();
             requestBodyJson.put("username", "channel");
             requestBodyJson.put("password", "$_@C0NNEKT");
             requestBodyJson.put("messageType", "1200");
             requestBodyJson.put("serviceCode", "3002");
-            requestBodyJson.put("transactionId", "digital-loan" + UUID.randomUUID());
-            requestBodyJson.put("parkTransactionId", utilityService.getParkReferenceByReference(loanApplicationDto.getReference()));
+            requestBodyJson.put("transactionId", "digital-loan-" + UUID.randomUUID());
+            requestBodyJson.put("parkTransactionId", request.getParkReference());
             requestBodyJson.put("msisdn", accountNumber);
             requestBodyJson.put("accountNumber", accountNumber);
             requestBodyJson.put("amount", String.valueOf(principalAmount));
-            requestBodyJson.put("period", String.valueOf(loanApplicationDto.getPeriod()));
-            requestBodyJson.put("productId", String.valueOf(loanApplicationDto.getProductId()));
-            requestBodyJson.put("accountName", loanApplicationDto.getCustomerName());
+            requestBodyJson.put("period", String.valueOf(productById.getProductRate()));
+            requestBodyJson.put("productId", String.valueOf(productById.getId()));
+            requestBodyJson.put("accountName", customerName);
             requestBodyJson.put("createDate", LocalDate.now());
             requestBodyJson.put("transactionType", "DLP");
             requestBodyJson.put("timestamp", Timestamp.from(Instant.now()));
             requestBodyJson.put("channel", "LMS");
 
             log.info("LOAN APPLICATION REQUEST : {}", requestBodyJson);
-
 
             RequestBuilder requestBuilder = new RequestBuilder("POST")
                     .setUrl(SAHAY_API)
@@ -338,7 +337,8 @@ public class LoanService {
             customResponse.put("holdAmount", parkAmount);
             customResponse.put("loanAmount", loanAmount);
             customResponse.put("accountNumber", phoneNumber);
-            customResponse.put("reference", parkResponse.getString("transactionRef"));
+            customResponse.put("reference", loanTransactionId);
+            customResponse.put("parkReference", parkResponse.optString("transactionEntryId"));
             return customResponse;
 
         } catch (HttpClientErrorException e) {
@@ -538,14 +538,13 @@ public class LoanService {
     @Scheduled(fixedRate = 1800000)
     public void repaymentPostToCbs() throws ApiException {
 
-        log.info("REPAYMENT POST TO CBS KICK OFF =======================");
+        log.info("REPAYMENT POST TO CBS KICK OFF ========================== :{}");
 
         Optional<CbsPosting> topByStatus = cbsPostingRepo.findTopByStatus(0);
 
         if (topByStatus.isPresent()) {
 
             CbsPosting cbsPosting = topByStatus.get();
-
 
             log.info("CBS POSTING RECORD : {}", topByStatus.get());
             // first post
