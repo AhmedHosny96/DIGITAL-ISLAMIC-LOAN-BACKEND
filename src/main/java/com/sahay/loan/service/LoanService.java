@@ -102,33 +102,37 @@ public class LoanService {
 
 //    private final AccountService accountService;
 
-    // TODO : LOAN PRODUCTS
-    public List<Object> getLoanProducts() {
-        String procedureCall = "{CALL GetProductSetupAsJSON}";
-
-        log.info(procedureCall);
-
-        return jdbcTemplate.query(procedureCall, (resultSet, rowNum) -> {
-            try {
-                String jsonResult = resultSet.getString(1); // Assuming the JSON result is in the first column
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                // Configure ObjectMapper to use BigDecimal for floating-point numbers
-                objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
-                objectMapper.configure(SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN, true);
-
-                Object[] products = objectMapper.readValue(jsonResult, Object[].class);
-
-                List<Object> productList = Arrays.asList(products);
-
-                log.info("PRODUCTS: {}", productList);
-                return productList;
-            } catch (JsonProcessingException e) {
-                log.error("Error parsing JSON result", e);
-                throw new RuntimeException("Error parsing JSON result", e);
-            }
-        });
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
     }
+
+    // TODO : LOAN PRODUCTS
+//    public List<Product> getLoanProducts() {
+//        String procedureCall = "{CALL GetProductSetupAsJSON}";
+//
+//        log.info(procedureCall);
+//
+//        return jdbcTemplate.query(procedureCall, (resultSet, rowNum) -> {
+//            try {
+//                String jsonResult = resultSet.getString(1); // Assuming the JSON result is in the first column
+//
+//                ObjectMapper objectMapper = new ObjectMapper();
+//                // Configure ObjectMapper to use BigDecimal for floating-point numbers
+//                objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+//                objectMapper.configure(SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN, true);
+//
+//                Product[] products = objectMapper.readValue(jsonResult, Object[].class);
+//
+//                List<Product> productList = Arrays.asList(products);
+//
+//                log.info("PRODUCTS: {}", productList);
+//                return productList;
+//            } catch (JsonProcessingException e) {
+//                log.error("Error parsing JSON result", e);
+//                throw new RuntimeException("Error parsing JSON result", e);
+//            }
+//        });
+//    }
 
     // get loan product by id
     public Product getProductById(int id) {

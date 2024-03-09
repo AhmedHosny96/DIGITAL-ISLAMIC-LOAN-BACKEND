@@ -1,6 +1,7 @@
 package com.sahay.loan.controller;
 
 import com.sahay.loan.dto.*;
+import com.sahay.loan.entity.Product;
 import com.sahay.loan.service.LoanService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -18,12 +19,11 @@ public class LoanController {
 
 
     private final LoanService loanService;
-
-
+    
     @GetMapping("/products")
     public ResponseEntity<?> getProductSetup() {
         try {
-            List<Object> loanProducts = loanService.getLoanProducts();
+            List<Product> loanProducts = loanService.getAllProducts();
             return new ResponseEntity<>(loanProducts, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error retrieving product setup", HttpStatus.INTERNAL_SERVER_ERROR);
