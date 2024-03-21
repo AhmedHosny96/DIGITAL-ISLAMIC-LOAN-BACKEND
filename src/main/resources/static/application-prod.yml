@@ -25,24 +25,19 @@ spring:
     allow-circular-references: true
 
 sahay:
-  endpoint: http://172.16.1.17:8013/channel/request
+  endpoint: http://172.16.3.27:8013/channel/request
   sms-endpoint: http://172.16.3.24:7088/api/v1/request
   sp-caller: http://172.16.3.25:8064/sp/api/v1/request
-  sms-to-success-template-id: 166
-  sms-to-failure-template-id: 145
-  sms-from-success-template-id: 165
-  sms-from-failure-template-id: 147
 #100 -masked value
 cbs:
   currency: ETB
-  endpoint: http://172.16.3.27:3900/philae/xws/vma
+  endpoint: http://172.16.2.11:3900/philae/xws/vma
   username: VMA
   password: vm@pi#81*
-  murabaha-principal-ledger: '-01-1040116'
-  murabaha-profitable-recievable-ledger: '-01-1050116'
-  murabaha-profit-ledger: '-01-4010116'
-  murabaha-pool-account: '-01-1020118'
-
+  murabaha-principal-ledger: '1-10-***-01-1040116'
+  murabaha-profitable-recievable-ledger: '1-10-***-01-1050116'
+  murabaha-profit-ledger: '1-10-***-01-4010116'
+  murabaha-pool-account: '1-10-***-01-1020118'
 
 logging:
   pattern:

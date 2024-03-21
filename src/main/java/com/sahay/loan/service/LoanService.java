@@ -92,6 +92,8 @@ public class LoanService {
     @Value("${cbs.currency}")
     private String CURRENCY;
 
+    private final String HQ_GL_PREFIX = "1-10-100";
+
 
     @Autowired
     private CbsClient cbsClient;
@@ -257,8 +259,8 @@ public class LoanService {
             // post to CBS GL
             TxRequest txRequest = new TxRequest();
             txRequest.setAmount(BigDecimal.valueOf(principalAmount));
-            txRequest.setCreditAccount(E_MURABAHA_POOL_ACCOUNT);
-            txRequest.setDebitAccount(E_MURABAHA_PRINCIPAL_LEDGER);
+            txRequest.setCreditAccount(HQ_GL_PREFIX + E_MURABAHA_POOL_ACCOUNT);
+            txRequest.setDebitAccount(PREFIX + E_MURABAHA_PRINCIPAL_LEDGER);
             txRequest.setCurrency(CURRENCY);
             txRequest.setNarration("FROM DIGITAL LOAN SERVICE");
             txRequest.setReference(UUID.randomUUID().toString());
@@ -291,7 +293,6 @@ public class LoanService {
             customResponse.put("responseDescription", e.getMessage());
             return customResponse;
         }
-
     }
 
 
@@ -538,7 +539,6 @@ public class LoanService {
 
     // TODO REPAYMENT POST TO CBS
 
-
     @Scheduled(fixedRate = 1800000)
     public void repaymentPostToCbs() throws ApiException {
 
@@ -546,9 +546,15 @@ public class LoanService {
 
         Optional<CbsPosting> topByStatus = cbsPostingRepo.findTopByStatus(0);
 
+
         if (topByStatus.isPresent()) {
 
             CbsPosting cbsPosting = topByStatus.get();
+
+            String GL_PREFIX = getGlPrefix(cbsPosting.getCustomerAccount());
+
+            log.info("GL-PREFIX : {} ", GL_PREFIX);
+            log.info("GL ACCOUNT : {} ", E_MURABAHA_PRINCIPAL_LEDGER);
 
             log.info("CBS POSTING RECORD : {}", topByStatus.get());
             // first post
@@ -558,8 +564,11 @@ public class LoanService {
             repaymentFirstPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
             repaymentFirstPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
             repaymentFirstPostRequest.setCurrency(CURRENCY);
-            repaymentFirstPostRequest.setCreditAccount(E_MURABAHA_PRINCIPAL_LEDGER);
-            repaymentFirstPostRequest.setDebitAccount(E_MURABAHA_POOL_ACCOUNT);
+            repaymentFirstPostRequest.setCreditAccount(HQ_GL_PREFIX + E_MURABAHA_POOL_ACCOUNT);
+            repaymentFirstPostRequest.setDebitAccount(GL_PREFIX + E_MURABAHA_PRINCIPAL_LEDGER);
+
+
+            log.info("CBS POST REPAYMENT REQUEST 1 : {}", repaymentFirstPostRequest);
 
             JSONObject firstGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
 
@@ -568,12 +577,14 @@ public class LoanService {
             repaymentFirstPostRequest.setReference(UUID.randomUUID().toString());
 
             repaymentSecondPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
-            repaymentSecondPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
+            repaymentSecondPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidMarkUp()));
             repaymentSecondPostRequest.setCurrency(CURRENCY);
-            repaymentSecondPostRequest.setCreditAccount(E_MURABAHA_PROFIT_RECEIVABLE);
-            repaymentSecondPostRequest.setDebitAccount(E_MURABAHA_PROFIT_LEDGER);
+            repaymentSecondPostRequest.setCreditAccount(GL_PREFIX + E_MURABAHA_PROFIT_LEDGER);
+            repaymentSecondPostRequest.setDebitAccount(GL_PREFIX + E_MURABAHA_PROFIT_RECEIVABLE);
 
-            JSONObject secondGLPostResponse = postToCbsGl(repaymentFirstPostRequest);
+            log.info("CBS POST REPAYMENT REQUEST 2 : {}", repaymentSecondPostRequest);
+
+            JSONObject secondGLPostResponse = postToCbsGl(repaymentSecondPostRequest);
 
             // if both success update the status to 1
             if (firstGLPostResponse.get("result").equals("SUCCESS") && secondGLPostResponse.get("result").equals("SUCCESS")) {
