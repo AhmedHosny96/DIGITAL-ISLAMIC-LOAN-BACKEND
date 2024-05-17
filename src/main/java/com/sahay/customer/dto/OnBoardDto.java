@@ -14,4 +14,5 @@ public class OnBoardDto {
     private String branchCode;
     private String comment;
     private String createdBy;
+    private Double appraisedAmount;
 }

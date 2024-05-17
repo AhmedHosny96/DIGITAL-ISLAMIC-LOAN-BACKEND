@@ -2,6 +2,7 @@ package com.sahay.loan.controller;
 
 
 import com.sahay.customer.model.Customer;
+import com.sahay.customer.model.CustomerDocument;
 import com.sahay.dto.CustomResponse;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.dto.ApproveCollateralDto;
@@ -9,6 +10,7 @@ import com.sahay.loan.dto.CollateralDocumentDto;
 import com.sahay.loan.dto.CreateCollateralDto;
 import com.sahay.loan.dto.LoanConfirmationDto;
 import com.sahay.loan.entity.Collateral;
+import com.sahay.loan.entity.CollateralImages;
 import com.sahay.loan.service.CollateralService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +69,12 @@ public class CollateralController {
         } catch (Exception e) {
             return new ResponseEntity<>("Error approving collateral: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping(value = "/documents", produces = "application/json")
+    public ResponseEntity<?> getAllBranches(@RequestParam("collateralId") int collateralId) {
+        List<CollateralImages> customerDocumentById = collateralService.getCollateralDocumentsByCollateralId(collateralId);
+        return new ResponseEntity<>(customerDocumentById, HttpStatus.OK);
     }
 
     // collateral documents

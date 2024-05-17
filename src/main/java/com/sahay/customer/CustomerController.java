@@ -2,9 +2,13 @@ package com.sahay.customer;
 
 
 import com.sahay.customer.dto.ApproveOnBoardDto;
+import com.sahay.customer.dto.CreateCustomerDocument;
 import com.sahay.customer.dto.OnBoardDto;
 import com.sahay.customer.model.CustomerBranch;
+import com.sahay.customer.model.CustomerDocument;
+import com.sahay.dto.CustomResponse;
 import com.sahay.exception.CustomException;
+import com.sahay.loan.dto.CollateralDocumentDto;
 import com.sahay.loan.entity.Collateral;
 import com.sahay.loan.service.CollateralService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +30,41 @@ public class CustomerController {
     private final CustomerService customerService;
 
     private final CollateralService collateralService;
+
+    @GetMapping(value = "/pending", produces = "application/json")
+    public ResponseEntity<?> getPendingCustomerdocs(@RequestParam("status") int status) {
+        List<CustomerDocument> pendingDocuments = customerService.getPendingDocuments(status);
+        return new ResponseEntity<>(pendingDocuments, HttpStatus.OK);
+    }
+
+
+    @PostMapping("/upload")
+    public ResponseEntity<CustomResponse> uploadCustomerDetails(@RequestParam("file") MultipartFile document,
+                                                                @RequestParam("documentType") String documentType,
+                                                                @RequestParam("description") String description,
+                                                                @RequestParam("customerId") Integer customerId,
+                                                                @RequestParam("documentNumber") String documentNumber,
+                                                                @RequestParam("createdBy") Integer createdBy
+
+    ) {
+
+
+        // Construct CollateralDocumentDto using the file and collateralId
+        CreateCustomerDocument documentDto = new CreateCustomerDocument();
+        documentDto.setFile(document);
+        documentDto.setDocumentType(documentType);
+        documentDto.setDocumentDescription(description);
+        documentDto.setCustomerId(customerId);
+        documentDto.setDocumentNumber(documentNumber);
+        documentDto.setCreatedBy(createdBy);
+
+        CustomResponse response = customerService.uploadCustomerDocuments(documentDto);
+        HttpStatus httpStatus = HttpStatus.OK;
+        if (!response.getResponse().equals("000")) {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR; // Set appropriate HTTP status code for error response
+        }
+        return ResponseEntity.status(httpStatus).body(response);
+    }
 
     // GET EXISTING CUSTOMER
 
@@ -51,6 +91,12 @@ public class CustomerController {
 
     }
 
+    @GetMapping(value = "/documents", produces = "application/json")
+    public ResponseEntity<?> getAllBranches(@RequestParam("customerId") int customerId) {
+        List<CustomerDocument> customerDocumentById = customerService.getCustomerDocumentById(customerId);
+        return new ResponseEntity<>(customerDocumentById, HttpStatus.OK);
+    }
+
     // GET BRANCHES
 
     @GetMapping(value = "/branches", produces = "application/json")
@@ -66,7 +112,7 @@ public class CustomerController {
 
         try {
             Collateral collateralByPhone = collateralService.getCollateralByPhone(phoneNumber);
-            
+
             JSONObject collateral = new JSONObject(collateralByPhone);
 
             response.put("response", "000");
@@ -94,15 +140,15 @@ public class CustomerController {
     // todo : GET ONBOARDED CUSTOMERS BY ACCOUNT AND STATUS
 
     @GetMapping(value = "/onboard", produces = "application/json")
-    public ResponseEntity<Map<String, Object>> getOnBoardedCustomers(@RequestParam(required = false) String accountNumber,
-                                                                     @RequestParam(required = false) Integer status) {
-        Map<String, Object> onBoardResponse = customerService.getOnboardedCustomer(accountNumber, status);
+    public ResponseEntity<?> getOnBoardedCustomers(@RequestParam(required = false) String accountNumber,
+                                                   @RequestParam(required = false) Integer status) {
+        List<Map<String, Object>> onboardedCustomer = customerService.getOnboardedCustomer(accountNumber, status);
 
-        if (onBoardResponse.containsKey("response")) {
-            return ResponseEntity.status(HttpStatus.OK).body(onBoardResponse);
+        if (onboardedCustomer.contains("response")) {
+            return ResponseEntity.status(HttpStatus.OK).body(onboardedCustomer);
         }
 
-        return ResponseEntity.ok().body(onBoardResponse);
+        return ResponseEntity.ok().body(onboardedCustomer);
     }
 
     // TODO : APPROVE ONBOARD

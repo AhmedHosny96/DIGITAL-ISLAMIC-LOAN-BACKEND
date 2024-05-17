@@ -23,18 +23,15 @@ public class GuarantorService {
 
     private final ModelMapper modelMapper;
 
-    public List<GuarantorDto> getAllGuarantors() {
+    public List<Guarantor> getAllGuarantors() {
         List<Guarantor> guarantors = guarantorRepo.findAll();
-        return guarantors.stream()
-                .map(guarantor -> modelMapper.map(guarantor, GuarantorDto.class))
-                .collect(Collectors.toList());
+        return guarantors;
     }
 
-    public Optional<GuarantorDto> getGuarantorByCustomerAccount(String customerAccount) {
-        Optional<Guarantor> optionalGuarantor = guarantorRepo.findByCustomerAccount(customerAccount);
-        return optionalGuarantor.map(guarantor -> modelMapper.map(guarantor, GuarantorDto.class));
-    }
+    public Optional<Guarantor> getGuarantorByCustomerAccount(String customerAccount) {
+        return guarantorRepo.findByCustomerAccount(customerAccount);
 
+    }
 
     public CustomResponse createGuarantor(GuarantorDto guarantorDto) {
         Optional<Guarantor> byCustomerAccount = guarantorRepo.findByCustomerAccount(guarantorDto.getCustomerAccount());
@@ -64,8 +61,8 @@ public class GuarantorService {
                 .remark(guarantorDto.getRemark())
                 .createdBy(guarantorDto.getCreatedBy())
                 .createdDate(guarantorDto.getCreatedDate())
-//                .verifiedBy(guarantorDto.getVerifiedBy())
-//                .verifiedDate(guarantorDto.getVerifiedDate())
+                .hasLoanAttached(false)
+
                 .build();
 
         guarantorRepo.save(guarantor);
@@ -76,11 +73,34 @@ public class GuarantorService {
                 .build();
     }
 
+    // confirmation by guarantor
+    public CustomResponse confirmationByGuarantorViaUSSD(String guarantorAccount, int status) {
+
+        Optional<Guarantor> guarantorByGuarantorAccount = guarantorRepo.findGuarantorByGuarantorAccount(guarantorAccount);
+        if (!guarantorByGuarantorAccount.isPresent())
+            return CustomResponse.builder().response("004").responseDescription("Guarantor not found").build();
+
+        Guarantor guarantor = guarantorByGuarantorAccount.get();
+
+        if (status == 1) {
+            guarantor.setHasLoanAttached(true);
+            // send sms to the customer
+
+            return CustomResponse.builder().response("000").responseDescription("Guarantor accepted the deal").build();
+
+        }
+
+        // send sms
+        return CustomResponse.builder().response("004").responseDescription("Guarantor has rejected the deal").build();
+
+
+    }
+
     public CustomResponse approveGuarantor(ApproveGuarantorDto approveGuarantorDto) {
         Optional<Guarantor> optionalGuarantor = guarantorRepo.findById(approveGuarantorDto.getGuarantorId());
         if (optionalGuarantor.isPresent()) {
             Guarantor guarantor = optionalGuarantor.get();
-            guarantor.setStatus(approveGuarantorDto.getStatus()); // Set status to "1" for approval
+            guarantor.setStatus(approveGuarantorDto.getStatus()); // Set status to "1" for approval , "2"
             guarantor.setVerifiedBy(approveGuarantorDto.getVerifiedBy());
             guarantor.setVerifiedDate(LocalDateTime.now());
             guarantorRepo.save(guarantor);

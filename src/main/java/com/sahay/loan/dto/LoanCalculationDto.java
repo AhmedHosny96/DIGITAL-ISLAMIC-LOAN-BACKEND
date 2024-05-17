@@ -14,8 +14,8 @@ import javax.validation.constraints.Min;
 @NoArgsConstructor
 public class LoanCalculationDto {
 
-    @Min(value = 2, message = "Period must be non-negative")
-    @Max(value = 2, message = "Period cannot be greater than 2 ")
+    @Min(value = 1, message = "Period must be non-negative")
+    @Max(value = 12, message = "Period cannot be greater than 12 ")
     private int period;
     @Min(value = 1000, message = "Amount must be acceptable amount")
     private double amount;

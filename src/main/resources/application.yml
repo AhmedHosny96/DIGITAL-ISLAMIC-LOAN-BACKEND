@@ -2,6 +2,9 @@ server:
   port: 8050
   error:
     include-message: always
+#  ssl:
+#    certificate-private-key: classpath:privKey.pem
+#    certificate: classpath:cert.pem
 
 spring:
   profiles:
@@ -13,6 +16,7 @@ spring:
     username: sa
     password: Today1234
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    
   jpa:
     hibernate:
       # ddl-auto: update

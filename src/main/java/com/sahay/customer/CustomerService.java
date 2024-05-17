@@ -6,14 +6,19 @@ import com.sahay.cbs.QueryDepositBalanceResponse;
 import com.sahay.config.AsyncHttpConfig;
 import com.sahay.config.CbsClient;
 import com.sahay.customer.dto.ApproveOnBoardDto;
+import com.sahay.customer.dto.CreateCustomerDocument;
 import com.sahay.customer.dto.OnBoardDto;
 import com.sahay.customer.model.Customer;
 import com.sahay.customer.model.CustomerBranch;
+import com.sahay.customer.model.CustomerDocument;
 import com.sahay.customer.repo.BranchRepository;
+import com.sahay.customer.repo.CustomerDocumentRepository;
 import com.sahay.customer.repo.CustomerRepository;
+import com.sahay.dto.CustomResponse;
 import com.sahay.exception.ApiException;
 import com.sahay.exception.CustomException;
 import com.sahay.loan.entity.Collateral;
+import com.sahay.loan.entity.Guarantor;
 import com.sahay.loan.entity.Request;
 import com.sahay.loan.repo.OtpRepository;
 import com.sahay.loan.service.CollateralService;
@@ -34,6 +39,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.sql.Date;
 import java.text.MessageFormat;
@@ -53,6 +62,10 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
 
     private final BranchRepository branchRepository;
+
+
+    private final CustomerDocumentRepository customerDocumentRepository;
+
 
     private final GuarantorService guarantorService;
 
@@ -79,6 +92,11 @@ public class CustomerService {
     //    @Value("${sahay.sms-endpoint}")
     private final String SMS_API = "http://172.16.3.25:8013/channel/request";
 
+
+    public List<CustomerDocument> getCustomerDocumentById(int customerId) {
+        return customerDocumentRepository.findCustomerDocumentByCustomerId(customerId);
+    }
+
     //TODO: CUSTOMER ONBOARDING
 
 
@@ -87,16 +105,18 @@ public class CustomerService {
         log.info("CUSTOMER ONBOARD REQUEST : {}", request);
         try {
             jdbcTemplate.execute((ConnectionCallback<Object>) con -> {
-                try (CallableStatement call = con.prepareCall("{CALL CustomerOnboarding(?, ?, ?, ? , ?)}")) {
-                    call.setString(1, request.getAccountNumber());
-                    call.setString(2, request.getBranchCode());
-                    call.setString(3, String.valueOf(request.getCreatedBy()));
-                    call.setString(4, request.getComment());
-                    call.registerOutParameter(5, Types.INTEGER); // Assuming @MsgId is a VARCHAR
+                try (CallableStatement call = con.prepareCall("{CALL CustomerOnboarding(?, ?, ?, ? , ? , ?)}")) {
+                    call.setString(1, request.getAccountNumber().trim());
+                    call.setString(2, request.getBranchCode().trim());
+                    call.setString(3, request.getCreatedBy().trim());
+                    call.setString(4, request.getComment().trim());
+                    call.setString(5, String.valueOf(request.getAppraisedAmount()));
+//                    call.setString(, request.getComment().trim());
+                    call.registerOutParameter(6, Types.INTEGER); // Assuming @MsgId is a VARCHAR
                     call.execute();
                     // You may retrieve output parameters here if needed
 
-                    int msgId = call.getInt(5);
+                    int msgId = call.getInt(6);
 
 //                    ResultSet resultSet = call.getResultSet();
                     log.info("RESULT SET : {}", msgId);
@@ -113,6 +133,9 @@ public class CustomerService {
                 }
             });
         } catch (DataAccessException e) {
+
+            log.warn("ERROR OCCURED WHILE ONBOARDING CUSTOMER");
+
             response.put("response", "999");
             response.put("responseDescription", e.getMessage());
             // Handle exception as appropriate
@@ -130,11 +153,11 @@ public class CustomerService {
         try {
             jdbcTemplate.execute((ConnectionCallback<Object>) con -> {
                 try (CallableStatement call = con.prepareCall("{CALL VerifyCustomer(?, ?, ?, ?, ?, ?)}")) {
-                    call.setString(1, request.getAccountNumber());
+                    call.setString(1, request.getAccountNumber().trim());
                     call.setDouble(2, request.getAppraisedAmount());
-                    call.setString(3, String.valueOf(request.getVerifiedBy()));
+                    call.setString(3, String.valueOf(request.getVerifiedBy()).trim());
                     call.setDate(4, (Date) request.getVerifiedDate());
-                    call.setString(5, request.getComment());
+                    call.setString(5, request.getComment().trim());
                     call.setInt(6, request.getStatus());
                     call.execute();
 
@@ -152,20 +175,33 @@ public class CustomerService {
     }
 
     // todo : GET ONBOARDED CUSTOMERS BY STATUS AND ACCOUNT
-    public Map<String, Object> getOnboardedCustomer(String accountNumber, Integer status) {
+
+    public List<Map<String, Object>> getOnboardedCustomer(String accountNumber, Integer status) {
         String sql = "{CALL GetOnboardedCustomer(?, ?)}";
         Object[] params = {accountNumber, status};
 
+        Map<String, Object> response = new HashMap<>();
+
         try {
-            return jdbcTemplate.queryForMap(sql, params);
+            List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql, params);
+
+            log.info("maps : {}", maps);
+
+            if (maps.isEmpty()) {
+                response.put("response", "004");
+                response.put("responseDescription", "No customer data found");
+                return Collections.singletonList(response);
+            }
+
+            return maps;
         } catch (EmptyResultDataAccessException e) {
             // If no customer found, return a predefined message
-            Map<String, Object> response = new HashMap<>();
             response.put("response", "004");
             response.put("responseDescription", "Customer not found");
-            return response;
+            return Collections.singletonList(response);
         }
     }
+
 
     // GET ALL SAHAY CUSTOMERS
     public String getCustomer(String accountNumber) {
@@ -372,11 +408,21 @@ public class CustomerService {
         boolean customerHasCollateral = hasCollateral(eligibilityRequest.getAccountNumber(), eligibilityRequest.getAmount());
 
 
-        if (onBoarded && customerHasCollateral && hasTwentyPercent) {
+        boolean hasActiveGuarantor = hasActiveGuarantor(eligibilityRequest.getAccountNumber());
+
+        boolean guarantorInUse = isGuarantorInUse(eligibilityRequest.getAccountNumber());
+
+
+        if (onBoarded && customerHasCollateral && hasTwentyPercent && hasActiveGuarantor && !guarantorInUse) {
+
             eligible = true;
         }
 
         String uniqueReference = "";
+        String responseDescription = "";
+        String response = "";
+
+
         if (eligible) {
             // otp
 
@@ -390,6 +436,7 @@ public class CustomerService {
             otpModel.setReference(uniqueReference);
             otpModel.setCreatedAt(LocalDateTime.now());
             otpModel.setProductId(eligibilityRequest.getProductId());
+            otpModel.setPeriod(eligibilityRequest.getPeriod());
             otpRepository.save(otpModel);
             // send confirmation message to client
 //            String message = " " + OTP;
@@ -401,12 +448,39 @@ public class CustomerService {
 
             sendConfirmationMessage(eligibilityRequest.getAccountNumber(), message);
 
+            responseDescription = "success";
+            response = "000";
+
         }
 
-        EligibilityResponse eligibilityResponse = new EligibilityResponse("000", "success",
+        if (!onBoarded) {
+            responseDescription = "Customer is not onboarded";
+            response = "004";
+        }
+        if (!customerHasCollateral) {
+            responseDescription = "Customer has no linked collateral";
+            response = "004";
+        }
+        if (!hasActiveGuarantor) {
+            responseDescription = "Customer has no linked guarantor";
+            response = "004";
+        }
+        if (guarantorInUse) {
+            responseDescription = "Guarantor is in use";
+            response = "004";
+        }
+
+        if (!hasTwentyPercent) {
+            responseDescription = "Customer has no twenty percent ";
+            response = "004";
+        }
+
+
+        EligibilityResponse eligibilityResponse = new EligibilityResponse(response, responseDescription,
                 accountLookupResponse.get("name").toString(), eligibilityRequest.getAccountNumber(), eligible, uniqueReference);
         return eligibilityResponse;
     }
+
 
     // calculate 20% percentage
     public boolean calculateTwentyPercent(double requestAmount, double balance) {
@@ -429,7 +503,6 @@ public class CustomerService {
 
         Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(customerAccount);
 
-
         Collateral collateralByNumber = collateralService.getCollateralByCustomerId(byCustomerAccount.get().getId());
 
         if (collateralByNumber == null) {
@@ -439,6 +512,42 @@ public class CustomerService {
         return collateralByNumber != null && principalAmount <= collateralByNumber.getValue() ? true : false;
 
     }
+
+
+    public boolean hasActiveGuarantor(String customerAccount) {
+
+        Optional<Guarantor> guarantorByCustomerAccount = guarantorService.getGuarantorByCustomerAccount(customerAccount);
+
+        if (!guarantorByCustomerAccount.isPresent()) return false;
+
+        return true;
+    }
+
+    public boolean isGuarantorInUse(String customerAccount) {
+        Optional<Guarantor> guarantorByCustomerAccount = guarantorService.getGuarantorByCustomerAccount(customerAccount);
+
+        Guarantor guarantorDto = guarantorByCustomerAccount.get();
+        return guarantorDto.isHasLoanAttached();
+    }
+
+
+//    Optional<GuarantorDto> guarantorByCustomerAccount = guarantorService.getGuarantorByCustomerAccount(customerAccount);
+//
+//        if (!guarantorByCustomerAccount.isPresent()) {
+//        return CustomResponse.builder()
+//                .response("004")
+//                .responseDescription("Customer has no guarantor")
+//                .build();
+//    }
+//
+//    GuarantorDto guarantorDto = guarantorByCustomerAccount.get();
+//
+//        if (guarantorDto.isHasLoanAttached()) {
+//        return CustomResponse.builder()
+//                .response("004")
+//                .responseDescription("Guarantor is in use")
+//                .build();
+//    }
 
 //    public boolean hasGuarantor(String customerAccount) {
 //        return guarantorService.getGuarantorByCustomerAccount(customerAccount)
@@ -510,6 +619,62 @@ public class CustomerService {
         }
 
         return byCustomerAccount.get();
+    }
+
+
+    public CustomResponse uploadCustomerDocuments(CreateCustomerDocument documentDto) {
+        try {
+            // Check if collateral exists
+            Optional<Customer> byId = customerRepository.findById(documentDto.getCustomerId());
+            if (!byId.isPresent()) {
+                return CustomResponse.builder()
+                        .response("004")
+                        .responseDescription("Customer not found")
+                        .build();
+            }
+
+            Customer customer = byId.get();
+            // Save file to the file system
+            String uploadDir = "E:\\Apps\\loan-docs"; // Specify your upload directory
+            String fileName = documentDto.getDocumentType() + "_" + customer.getCustomerAccount();
+            Path filePath = Paths.get(uploadDir, fileName);
+            Files.copy(documentDto.getFile().getInputStream(), filePath);
+
+            // Save file path in the database
+            CustomerDocument customerDocument = CustomerDocument.builder()
+                    .customerId(documentDto.getCustomerId())
+                    .documentDescription(documentDto.getDocumentDescription())
+                    .documentType(documentDto.getDocumentType())
+                    .documentPath("/" + uploadDir + "/" + fileName + "_" + System.currentTimeMillis()) // Adjust the path to start with a slash
+                    .createdBy(String.valueOf(documentDto.getCreatedBy()))
+                    .createdDate(LocalDateTime.now())
+                    .customerAccount(customer.getCustomerAccount())
+                    .documentNumber(documentDto.getDocumentNumber())
+                    .status(0)
+                    .build();
+            customerDocumentRepository.save(customerDocument);
+
+            return CustomResponse.builder()
+                    .response("000")
+                    .responseDescription("Customer documents uploaded successfully")
+                    .build();
+        } catch (IOException e) {
+            return CustomResponse.builder()
+                    .response("999")
+                    .responseDescription("Failed to upload customer documents : " + e.getMessage())
+                    .build();
+        }
+    }
+
+
+    public List<CustomerDocument> getPendingDocuments(int status) {
+        List<CustomerDocument> customerDocumentByStatus = customerDocumentRepository.findCustomerDocumentByStatus(status);
+
+        log.info("document list : {}", customerDocumentByStatus);
+
+        return customerDocumentByStatus;
+
+
     }
 
 

@@ -16,10 +16,7 @@ import com.sahay.customer.repo.BranchRepository;
 import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.exception.ApiException;
 import com.sahay.loan.dto.*;
-import com.sahay.loan.entity.Collateral;
-import com.sahay.loan.entity.CbsPosting;
-import com.sahay.loan.entity.Product;
-import com.sahay.loan.entity.Request;
+import com.sahay.loan.entity.*;
 import com.sahay.loan.repo.CollateralRepository;
 import com.sahay.loan.repo.CbsPostingRepo;
 import com.sahay.loan.repo.OtpRepository;
@@ -55,7 +52,7 @@ public class LoanService {
 
 //    dbo.GetProductSetupAsJSON()
 
-    private final String SAHAY_API = "http://172.16.1.17:8013/channel/request";
+    private final String SAHAY_API = "http://172.16.3.25:8013/channel/request";
 
     private final Double LOAN_LIMIT = 100_000.0;
 
@@ -100,6 +97,8 @@ public class LoanService {
 
     private final JdbcTemplate jdbcTemplate;
     private final CollateralService collateralService;
+
+    private final GuarantorService guarantorService;
 
 
 //    private final AccountService accountService;
@@ -200,7 +199,8 @@ public class LoanService {
             double principalAmount = request.getPrincipalAmount();
 
             Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(accountNumber);
-
+            
+            Guarantor guarantor = guarantorService.getGuarantorByCustomerAccount(customerByAccountNumber.getCustomerAccount()).get();
 
             String customerName = customerByAccountNumber.getFirstName() + " " + customerByAccountNumber.getMiddleName() + " " + customerByAccountNumber.getLastName();
             Product productById = getProductById(request.getProductId());
@@ -215,8 +215,9 @@ public class LoanService {
             requestBodyJson.put("parkTransactionId", request.getParkReference());
             requestBodyJson.put("msisdn", accountNumber);
             requestBodyJson.put("accountNumber", accountNumber);
+            requestBodyJson.put("guarantorAccount", guarantor.getGuarantorAccount());
             requestBodyJson.put("amount", String.valueOf(principalAmount));
-            requestBodyJson.put("period", String.valueOf(productById.getProductRate()));
+            requestBodyJson.put("period", String.valueOf(request.getPeriod()));
             requestBodyJson.put("productId", String.valueOf(productById.getId()));
             requestBodyJson.put("accountName", customerName);
             requestBodyJson.put("createDate", LocalDate.now());
@@ -343,7 +344,7 @@ public class LoanService {
             customResponse.put("loanAmount", loanAmount);
             customResponse.put("accountNumber", phoneNumber);
             customResponse.put("reference", loanTransactionId);
-            customResponse.put("parkReference", parkResponse.optString("transactionEntryId"));
+            customResponse.put("parkReference", parkResponse.optString("transactionRef"));
             return customResponse;
 
         } catch (HttpClientErrorException e) {
@@ -489,7 +490,10 @@ public class LoanService {
             return customResponse;
         }
 
-        double markUp = loanCalculationDto.getAmount() * 0.02;
+        log.info(" AMOUNT  : {}", loanCalculationDto.getAmount());
+        log.info(" PERIOD  : {}", loanCalculationDto.getPeriod());
+
+        double markUp = loanCalculationDto.getAmount() * 0.02 * loanCalculationDto.getPeriod();
 
         customResponse.put("response", "000");
         customResponse.put("responseDescription", "successful");
@@ -564,8 +568,8 @@ public class LoanService {
             repaymentFirstPostRequest.setNarration("REPAYMENT FROM DIGITAL LOAN");
             repaymentFirstPostRequest.setAmount(BigDecimal.valueOf(cbsPosting.getPaidPrincipal()));
             repaymentFirstPostRequest.setCurrency(CURRENCY);
-            repaymentFirstPostRequest.setCreditAccount(HQ_GL_PREFIX + E_MURABAHA_POOL_ACCOUNT);
-            repaymentFirstPostRequest.setDebitAccount(GL_PREFIX + E_MURABAHA_PRINCIPAL_LEDGER);
+            repaymentFirstPostRequest.setCreditAccount(GL_PREFIX + E_MURABAHA_PRINCIPAL_LEDGER);
+            repaymentFirstPostRequest.setDebitAccount(HQ_GL_PREFIX + E_MURABAHA_POOL_ACCOUNT);
 
 
             log.info("CBS POST REPAYMENT REQUEST 1 : {}", repaymentFirstPostRequest);

@@ -23,12 +23,15 @@ public class GuarantorDto {
     private boolean isEmployed;
     private String employmentDetails;
     private double salary;
+    private String incomeDetails;
+    private String financialObligation;
+    private double incomeAmount;
     private String creditHistory;
-//    private int status;
     private String remark;
     private int createdBy;
     private LocalDate createdDate;
-//    private String verifiedBy;
-//    private LocalDateTime verifiedDate;
-
+    private int verifiedBy;
+    private LocalDateTime verifiedDate;
+    private boolean hasLoanAttached;
+    private String loanAccountNumber;
 }

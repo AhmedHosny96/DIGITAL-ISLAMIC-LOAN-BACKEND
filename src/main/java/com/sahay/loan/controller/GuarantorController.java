@@ -4,6 +4,7 @@ package com.sahay.loan.controller;
 import com.sahay.dto.CustomResponse;
 import com.sahay.loan.dto.ApproveGuarantorDto;
 import com.sahay.loan.dto.GuarantorDto;
+import com.sahay.loan.entity.Guarantor;
 import com.sahay.loan.service.GuarantorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,14 +22,14 @@ public class GuarantorController {
     private final GuarantorService guarantorService;
 
     @GetMapping
-    public ResponseEntity<List<GuarantorDto>> getAllGuarantors() {
-        List<GuarantorDto> guarantors = guarantorService.getAllGuarantors();
+    public ResponseEntity<List<?>> getAllGuarantors() {
+        List<Guarantor> guarantors = guarantorService.getAllGuarantors();
         return ResponseEntity.ok(guarantors);
     }
 
     @GetMapping("/{customerAccount}")
-    public ResponseEntity<GuarantorDto> getGuarantorByCustomerAccount(@PathVariable String customerAccount) {
-        Optional<GuarantorDto> optionalGuarantor = guarantorService.getGuarantorByCustomerAccount(customerAccount);
+    public ResponseEntity<Guarantor> getGuarantorByCustomerAccount(@PathVariable String customerAccount) {
+        Optional<Guarantor> optionalGuarantor = guarantorService.getGuarantorByCustomerAccount(customerAccount);
         return optionalGuarantor.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -39,7 +40,7 @@ public class GuarantorController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/confirm")
+    @PostMapping("/approve")
     public ResponseEntity<CustomResponse> approveGuarantor(@RequestBody ApproveGuarantorDto approveGuarantorDto) {
         CustomResponse response = guarantorService.approveGuarantor(approveGuarantorDto);
         return ResponseEntity.ok(response);

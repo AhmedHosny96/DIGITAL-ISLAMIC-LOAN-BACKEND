@@ -19,11 +19,12 @@ public class LoanController {
 
 
     private final LoanService loanService;
-    
+
     @GetMapping("/products")
     public ResponseEntity<?> getProductSetup() {
         try {
             List<Product> loanProducts = loanService.getAllProducts();
+
             return new ResponseEntity<>(loanProducts, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error retrieving product setup", HttpStatus.INTERNAL_SERVER_ERROR);

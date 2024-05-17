@@ -27,6 +27,9 @@ public class Request {
     @Column(name = "ProductId")
     private Integer productId;
 
+    @Column(name = "Period")
+    private Integer period;
+
     @Column(name = "PrincipleAmount")
     private double principalAmount;
     @Column(name = "DepositAmount")

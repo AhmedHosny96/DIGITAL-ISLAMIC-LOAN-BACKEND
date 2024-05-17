@@ -30,6 +30,7 @@ public class Guarantor {
 
     @Column(name = "FirstName")
     private String firstName;
+
     @Column(name = "MiddleName")
     private String middleName;
 
@@ -57,6 +58,15 @@ public class Guarantor {
     @Column(name = "Salary")
     private double salary;
 
+    @Column(name = "IncomeDetails")
+    private String incomeDetails;
+
+    @Column(name = "FinancialObligation")
+    private String financialObligation;
+
+    @Column(name = "IncomeAmount")
+    private double incomeAmount;
+
     @Column(name = "CreditHistory")
     private String creditHistory;
 
@@ -75,8 +85,14 @@ public class Guarantor {
     @Column(name = "VerifiedBy")
     private Integer verifiedBy;
 
-
     @Column(name = "VerifiedDate")
     private LocalDateTime verifiedDate;
 
+    @Column(name = "HasLoanAttached")
+    private boolean hasLoanAttached;
+
+    @Column(name = "LoanAccountNumber")
+    private String loanAccountNumber;
+
 }
+

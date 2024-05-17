@@ -2,6 +2,7 @@ package com.sahay.loan.service;
 
 
 import com.sahay.customer.model.Customer;
+import com.sahay.customer.model.CustomerDocument;
 import com.sahay.customer.repo.CustomerRepository;
 import com.sahay.dto.CustomResponse;
 import com.sahay.exception.CustomException;
@@ -96,7 +97,7 @@ public class CollateralService {
                         .build();
             }
             // Save file to the file system
-            String uploadDir = "D:\\Apps\\loan-docs"; // Specify your upload directory
+            String uploadDir = "E:\\Apps\\loan-docs"; // Specify your upload directory
             String fileName = System.currentTimeMillis() + "_" + documentDto.getDocument().getOriginalFilename();
             Path filePath = Paths.get(uploadDir, fileName);
             Files.copy(documentDto.getDocument().getInputStream(), filePath);
@@ -119,6 +120,12 @@ public class CollateralService {
                     .build();
         }
     }
+
+    public List<CollateralImages> getCollateralDocumentsByCollateralId(int collateralId) {
+        return collateralImagesRepo.findByCollateralId(collateralId);
+    }
+
+
     // approve or reject , status , 1
 
     public CustomResponse approveCollateral(Integer collateralId, ApproveCollateralDto approvalDto) {
@@ -167,7 +174,7 @@ public class CollateralService {
 
         log.info("PHONE : {}", phoneNumber);
         Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(phoneNumber);
-        
+
         if (!byCustomerAccount.isPresent()) {
             throw new CustomException("Customer account does not exist");
         }

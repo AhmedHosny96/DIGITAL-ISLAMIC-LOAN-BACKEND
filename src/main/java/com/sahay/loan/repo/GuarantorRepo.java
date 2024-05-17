@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface GuarantorRepo extends JpaRepository<Guarantor, Long> {
 
     Optional<Guarantor> findByCustomerAccount(String accountNumber);
+
+    Optional<Guarantor> findGuarantorByGuarantorAccount(String accountNumber);
 }
