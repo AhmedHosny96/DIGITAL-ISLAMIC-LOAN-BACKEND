@@ -21,5 +21,8 @@ public interface OtpRepository extends JpaRepository<Request, Integer> {
 
 
     Optional<Request> findByStatusAndReference(int status, String reference);
+    Optional<Request> findByStatusAndAccountNumber(int status, String accountNumber);
+
+
 
 }

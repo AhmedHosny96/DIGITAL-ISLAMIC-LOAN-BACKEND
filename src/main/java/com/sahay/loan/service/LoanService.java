@@ -37,6 +37,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,7 +53,7 @@ public class LoanService {
 
 //    dbo.GetProductSetupAsJSON()
 
-    private final String SAHAY_API = "http://172.16.3.25:8013/channel/request";
+    private final String SAHAY_API = "http://172.16.1.17:8013/channel/request";
 
     private final Double LOAN_LIMIT = 100_000.0;
 
@@ -199,7 +200,7 @@ public class LoanService {
             double principalAmount = request.getPrincipalAmount();
 
             Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(accountNumber);
-            
+
             Guarantor guarantor = guarantorService.getGuarantorByCustomerAccount(customerByAccountNumber.getCustomerAccount()).get();
 
             String customerName = customerByAccountNumber.getFirstName() + " " + customerByAccountNumber.getMiddleName() + " " + customerByAccountNumber.getLastName();
@@ -248,6 +249,9 @@ public class LoanService {
             customResponse.put("accountNumber", accountNumber);
             customResponse.put("principalAmount", principalAmount);
             customResponse.put("reference", loanApplicationDto.getReference());
+
+            // notify the guarantor
+
 
             // GET THE BRANCH PREFIX
 
@@ -344,7 +348,7 @@ public class LoanService {
             customResponse.put("loanAmount", loanAmount);
             customResponse.put("accountNumber", phoneNumber);
             customResponse.put("reference", loanTransactionId);
-            customResponse.put("parkReference", parkResponse.optString("transactionRef"));
+            customResponse.put("parkReference", parkResponse.optString("transactionEntryId"));
             return customResponse;
 
         } catch (HttpClientErrorException e) {

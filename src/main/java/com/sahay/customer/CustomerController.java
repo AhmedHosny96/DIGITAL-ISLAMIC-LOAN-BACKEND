@@ -45,7 +45,6 @@ public class CustomerController {
                                                                 @RequestParam("customerId") Integer customerId,
                                                                 @RequestParam("documentNumber") String documentNumber,
                                                                 @RequestParam("createdBy") Integer createdBy
-
     ) {
 
 
@@ -122,7 +121,6 @@ public class CustomerController {
             return new ResponseEntity<>(response.toString(), HttpStatus.OK);
         } catch (CustomException e) {
 
-
             response.put("response", "004");
             response.put("responseDescription", e.getMessage());
             // Handle the custom exception
@@ -138,17 +136,13 @@ public class CustomerController {
     }
 
     // todo : GET ONBOARDED CUSTOMERS BY ACCOUNT AND STATUS
-
     @GetMapping(value = "/onboard", produces = "application/json")
     public ResponseEntity<?> getOnBoardedCustomers(@RequestParam(required = false) String accountNumber,
                                                    @RequestParam(required = false) Integer status) {
-        List<Map<String, Object>> onboardedCustomer = customerService.getOnboardedCustomer(accountNumber, status);
+        JSONObject onboardedCustomerByAccountOrStatus = customerService.getOnboardedCustomerByAccountOrStatus(accountNumber, status);
 
-        if (onboardedCustomer.contains("response")) {
-            return ResponseEntity.status(HttpStatus.OK).body(onboardedCustomer);
-        }
-
-        return ResponseEntity.ok().body(onboardedCustomer);
+//
+        return ResponseEntity.ok(onboardedCustomerByAccountOrStatus.toString());
     }
 
     // TODO : APPROVE ONBOARD

@@ -63,7 +63,6 @@ public class CustomerService {
 
     private final BranchRepository branchRepository;
 
-
     private final CustomerDocumentRepository customerDocumentRepository;
 
 
@@ -90,7 +89,6 @@ public class CustomerService {
     private final String SAHAY_API = "http://172.16.1.17:8013/channel/request";
 
     //    @Value("${sahay.sms-endpoint}")
-    private final String SMS_API = "http://172.16.3.25:8013/channel/request";
 
 
     public List<CustomerDocument> getCustomerDocumentById(int customerId) {
@@ -176,32 +174,58 @@ public class CustomerService {
 
     // todo : GET ONBOARDED CUSTOMERS BY STATUS AND ACCOUNT
 
-    public List<Map<String, Object>> getOnboardedCustomer(String accountNumber, Integer status) {
-        String sql = "{CALL GetOnboardedCustomer(?, ?)}";
-        Object[] params = {accountNumber, status};
+//    public List<Map<String, Object>> getOnboardedCustomer(String accountNumber, Integer status) {
+//        String sql = "{CALL GetOnboardedCustomer(?, ?)}";
+//        Object[] params = {accountNumber, status};
+//
+//        Map<String, Object> response = new HashMap<>();
+//
+//        try {
+//            List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql, params);
+//
+//            log.info("maps : {}", maps);
+//
+//            if (maps.isEmpty()) {
+//                response.put("response", "004");
+//                response.put("responseDescription", "No customer data found");
+//                return Collections.singletonList(response);
+//            }
+//
+//            return maps;
+//        } catch (EmptyResultDataAccessException e) {
+//            // If no customer found, return a predefined message
+//            response.put("response", "004");
+//            response.put("responseDescription", "Customer not found");
+//            return Collections.singletonList(response);
+//        }
+//    }
 
-        Map<String, Object> response = new HashMap<>();
+    public JSONObject getOnboardedCustomerByAccountOrStatus(String accountNumber, Integer status) {
+        var customResponse = new JSONObject();
 
         try {
-            List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql, params);
+            Optional<List<Customer>> allByCustomerAccountOrStatus = customerRepository.findAllByCustomerAccountOrStatus(accountNumber, status);
 
-            log.info("maps : {}", maps);
-
-            if (maps.isEmpty()) {
-                response.put("response", "004");
-                response.put("responseDescription", "No customer data found");
-                return Collections.singletonList(response);
+            if (!allByCustomerAccountOrStatus.isPresent() || allByCustomerAccountOrStatus.get().isEmpty()) {
+                customResponse.put("response", "004");
+                customResponse.put("responseDescription", "No data found");
+                return customResponse;
             }
 
-            return maps;
-        } catch (EmptyResultDataAccessException e) {
-            // If no customer found, return a predefined message
-            response.put("response", "004");
-            response.put("responseDescription", "Customer not found");
-            return Collections.singletonList(response);
+            log.info("onboardedCustomerByAccountOrStatus : {}", allByCustomerAccountOrStatus.get());
+
+            customResponse.put("response", "000");
+            customResponse.put("responseDescription", "success");
+            customResponse.put("customers", allByCustomerAccountOrStatus.get());
+
+            return customResponse;
+        } catch (Exception e) {
+            log.error("An error occurred while fetching onboarded customers", e);
+            customResponse.put("response", "005");
+            customResponse.put("responseDescription", "Internal server error");
+            return customResponse;
         }
     }
-
 
     // GET ALL SAHAY CUSTOMERS
     public String getCustomer(String accountNumber) {
@@ -446,7 +470,7 @@ public class CustomerService {
             String loanMessagePattern = "Dear customer, you have initiated a loan application for ETB {0} as at {1} - {2} from CommercePal. To proceed with processing it, we will withhold ETB {3}. Enter this OTP {4} to confirm.";
             String message = MessageFormat.format(loanMessagePattern, eligibilityRequest.getAmount(), LocalDate.now(), String.format("%02d:%02d", currentTime.getHour(), currentTime.getMinute()), eligibilityRequest.getAmount() * 0.2, String.valueOf(OTP));
 
-            sendConfirmationMessage(eligibilityRequest.getAccountNumber(), message);
+            utilityService.sendConfirmationMessage(eligibilityRequest.getAccountNumber(), message);
 
             responseDescription = "success";
             response = "000";
@@ -556,42 +580,6 @@ public class CustomerService {
 //    }
 
     // todo : SEND confirmation with OTP
-    public void sendConfirmationMessage(String phoneNumber, String message) {
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            JSONObject jsonPayload = new JSONObject();
-            jsonPayload.put("username", "channel");
-            jsonPayload.put("password", "$_@C0NNEKT");
-            jsonPayload.put("messageType", "1200");
-            jsonPayload.put("serviceCode", "290");
-            jsonPayload.put("transactionType", "NOT");
-            jsonPayload.put("transactionId", "Digital-loan-" + UUID.randomUUID());
-            jsonPayload.put("institution", "");
-            jsonPayload.put("businessCode", "");
-            jsonPayload.put("customerName", "");
-            jsonPayload.put("alertType", "GEN");
-            jsonPayload.put("user", "");
-            jsonPayload.put("accessPassword", "");
-            jsonPayload.put("toMsisdn", phoneNumber);
-            jsonPayload.put("message", message);
-            jsonPayload.put("timestamp", Timestamp.from(Instant.now()));
-            jsonPayload.put("channel", "PORTAL");
-
-            RequestBuilder requestBuilder = new RequestBuilder("POST")
-                    .setUrl(SMS_API)
-                    .setBody(jsonPayload.toString());
-
-            JSONObject smsResponse = asyncHttp.sendRequest(requestBuilder);
-            log.info("SMS RESPONSE : {}", smsResponse);
-
-        } catch (Exception e) {
-            // Handle any exceptions that might occur during the API call
-            e.printStackTrace();
-        }
-    }
 
     // get customer branch
 

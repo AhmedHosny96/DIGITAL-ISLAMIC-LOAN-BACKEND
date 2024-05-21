@@ -27,6 +27,12 @@ public class GuarantorController {
         return ResponseEntity.ok(guarantors);
     }
 
+    @GetMapping("/confirm")
+    public ResponseEntity<?> guarantorConfirmation(@RequestParam String guarantorAccount, @RequestParam Integer status) {
+        CustomResponse customResponse = guarantorService.confirmationByGuarantorViaUSSD(guarantorAccount, status);
+        return ResponseEntity.ok(customResponse);
+    }
+
     @GetMapping("/{customerAccount}")
     public ResponseEntity<Guarantor> getGuarantorByCustomerAccount(@PathVariable String customerAccount) {
         Optional<Guarantor> optionalGuarantor = guarantorService.getGuarantorByCustomerAccount(customerAccount);
