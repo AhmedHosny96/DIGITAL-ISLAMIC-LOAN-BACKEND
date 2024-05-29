@@ -7,6 +7,7 @@ import com.sahay.loan.dto.GuarantorDto;
 import com.sahay.loan.entity.Guarantor;
 import com.sahay.loan.service.GuarantorService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,12 @@ import java.util.Optional;
 public class GuarantorController {
 
     private final GuarantorService guarantorService;
+
+    @GetMapping(value = "/pending", produces = "application/json")
+    public ResponseEntity<?> getPendingGuarantor(@RequestParam int status) {
+        JSONObject pendingGuarantorList = guarantorService.getPendingGuarantorList(status);
+        return ResponseEntity.ok(pendingGuarantorList.toString());
+    }
 
     @GetMapping
     public ResponseEntity<List<?>> getAllGuarantors() {

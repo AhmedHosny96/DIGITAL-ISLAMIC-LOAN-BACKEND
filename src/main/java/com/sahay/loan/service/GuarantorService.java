@@ -9,6 +9,8 @@ import com.sahay.loan.entity.Request;
 import com.sahay.loan.repo.GuarantorRepo;
 import com.sahay.loan.repo.OtpRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
+import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,23 @@ public class GuarantorService {
     private final ModelMapper modelMapper;
 
     private final OtpRepository otpRepository;
+
+    public JSONObject getPendingGuarantorList(int status) {
+        Optional<List<Guarantor>> guarantorByStatus = guarantorRepo.findGuarantorByStatus(status);
+
+        var customResponse = new JSONObject();
+        if (guarantorByStatus.get().isEmpty()) {
+            customResponse.put("response", "004");
+            customResponse.put("responseDescription", "No data found");
+            return customResponse;
+        }
+
+        customResponse.put("response", "000");
+        customResponse.put("responseDescription", "success");
+        customResponse.put("guarantors", guarantorByStatus.get());
+
+        return customResponse;
+    }
 
 //    private final CustomerService customerService;
 

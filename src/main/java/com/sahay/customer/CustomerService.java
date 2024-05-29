@@ -550,8 +550,12 @@ public class CustomerService {
     public boolean isGuarantorInUse(String customerAccount) {
         Optional<Guarantor> guarantorByCustomerAccount = guarantorService.getGuarantorByCustomerAccount(customerAccount);
 
-        Guarantor guarantorDto = guarantorByCustomerAccount.get();
-        return guarantorDto.isHasLoanAttached();
+        if (guarantorByCustomerAccount.isPresent()) {
+            Guarantor guarantorDto = guarantorByCustomerAccount.get();
+            return guarantorDto.isHasLoanAttached();
+        }
+
+        return false;
     }
 
 
