@@ -2,6 +2,7 @@ package com.sahay.loan.controller;
 
 
 import com.sahay.dto.CustomResponse;
+import com.sahay.exception.CustomException;
 import com.sahay.loan.dto.ApproveGuarantorDto;
 import com.sahay.loan.dto.GuarantorDto;
 import com.sahay.loan.entity.Guarantor;
@@ -26,6 +27,12 @@ public class GuarantorController {
     public ResponseEntity<?> getPendingGuarantor(@RequestParam int status) {
         JSONObject pendingGuarantorList = guarantorService.getPendingGuarantorList(status);
         return ResponseEntity.ok(pendingGuarantorList.toString());
+    }
+
+    @GetMapping(value = "/loan-info", produces = "application/json")
+    public ResponseEntity<?> getLoanInfo(@RequestParam String guarantorAccount) throws CustomException {
+        CustomResponse loanDetailsByGuarantor = guarantorService.getLoanDetailsByGuarantor(guarantorAccount);
+        return ResponseEntity.ok(loanDetailsByGuarantor);
     }
 
     @GetMapping
@@ -54,7 +61,7 @@ public class GuarantorController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<CustomResponse> approveGuarantor(@RequestBody ApproveGuarantorDto approveGuarantorDto) {
+    public ResponseEntity<CustomResponse> approveGuarantor(@RequestBody ApproveGuarantorDto approveGuarantorDto) throws CustomException {
         CustomResponse response = guarantorService.approveGuarantor(approveGuarantorDto);
         return ResponseEntity.ok(response);
     }

@@ -90,6 +90,7 @@ public class CustomerController {
 
     }
 
+
     @GetMapping(value = "/documents", produces = "application/json")
     public ResponseEntity<?> getAllBranches(@RequestParam("customerId") int customerId) {
         List<CustomerDocument> customerDocumentById = customerService.getCustomerDocumentById(customerId);
@@ -145,6 +146,7 @@ public class CustomerController {
         return ResponseEntity.ok(onboardedCustomerByAccountOrStatus.toString());
     }
 
+    // TODO : APPROVE ONBOARD
     // TODO : APPROVE ONBOARD
     @PostMapping(value = "/onboard-approval", produces = "application/json")
     public ResponseEntity<?> customerOnBoard(@RequestBody ApproveOnBoardDto request) throws Exception {

@@ -1,7 +1,9 @@
 package com.sahay.loan.service;
 
 import com.sahay.customer.CustomerService;
+import com.sahay.customer.model.Customer;
 import com.sahay.dto.CustomResponse;
+import com.sahay.exception.CustomException;
 import com.sahay.loan.dto.ApproveGuarantorDto;
 import com.sahay.loan.dto.GuarantorDto;
 import com.sahay.loan.entity.Guarantor;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -27,6 +31,10 @@ import java.util.stream.Collectors;
 public class GuarantorService {
 
     private final GuarantorRepo guarantorRepo;
+
+    @Lazy
+    @Autowired
+    private CustomerService customerService;
 
     private final UtilityService utilityService;
 
@@ -62,6 +70,29 @@ public class GuarantorService {
         return guarantorRepo.findByCustomerAccount(customerAccount);
 
     }
+
+    public CustomResponse getLoanDetailsByGuarantor(String account) throws CustomException {
+
+        Optional<Guarantor> guarantorByGuarantorAccount = guarantorRepo.findGuarantorByGuarantorAccount(account);
+
+        if (!guarantorByGuarantorAccount.isPresent()) {
+            return CustomResponse.builder()
+                    .response("004")
+                    .responseDescription("Guarantor not found")
+                    .build();
+        }
+        Guarantor guarantor = guarantorByGuarantorAccount.get();
+        Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(guarantor.getCustomerAccount());
+
+        return CustomResponse
+                .builder()
+                .response("000")
+                .responseDescription("Customer name : " + customerByAccountNumber.getFirstName() + " " + customerByAccountNumber.getMiddleName() + " " + customerByAccountNumber.getLastName()
+                        + " , Phone : " + customerByAccountNumber.getCustomerAccount() + " , Amount : " + customerByAccountNumber.getAppraisedAmount()
+                ).build();
+
+    }
+
 
     public CustomResponse createGuarantor(GuarantorDto guarantorDto) {
         Optional<Guarantor> byCustomerAccount = guarantorRepo.findByCustomerAccount(guarantorDto.getCustomerAccount());
@@ -138,7 +169,8 @@ public class GuarantorService {
 
     }
 
-    public CustomResponse approveGuarantor(ApproveGuarantorDto approveGuarantorDto) {
+    //
+    public CustomResponse approveGuarantor(ApproveGuarantorDto approveGuarantorDto) throws CustomException {
         Optional<Guarantor> optionalGuarantor = guarantorRepo.findById(approveGuarantorDto.getGuarantorId());
         if (optionalGuarantor.isPresent()) {
             Guarantor guarantor = optionalGuarantor.get();
@@ -147,17 +179,16 @@ public class GuarantorService {
             guarantor.setVerifiedDate(LocalDateTime.now());
             guarantorRepo.save(guarantor);
 
-            Optional<Request> byStatusAndAccountNumber = otpRepository.findByStatusAndAccountNumber(0, guarantor.getCustomerAccount());
+            Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(guarantor.getCustomerAccount());
 
-            Request request = byStatusAndAccountNumber.get();
 
             // notify guarantor here
 
             String loanMessagePattern = "Dear customer, account {0} has selected you as a guarantor for an amount of {1}. To accept, please dial *873#6*3*1.";
 
             String message = MessageFormat.format(loanMessagePattern,
-                    request.getAccountNumber(),
-                    request.getPrincipalAmount());
+                    customerByAccountNumber.getCustomerAccount(),
+                    customerByAccountNumber.getAppraisedAmount());
 
             utilityService.sendConfirmationMessage(guarantor.getGuarantorAccount(), message);
 

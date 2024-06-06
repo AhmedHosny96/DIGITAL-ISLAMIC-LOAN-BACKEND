@@ -12,7 +12,6 @@ public class LoanConfirmationDto {
 
     private String otp;
     private String reference;
-//    private double depositAmount; // 20%
 
 
 }
