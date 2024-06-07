@@ -1,6 +1,7 @@
 package com.sahay.loan.service;
 
 
+import com.sahay.customer.CustomerService;
 import com.sahay.customer.model.Customer;
 import com.sahay.customer.model.CustomerDocument;
 import com.sahay.customer.repo.CustomerRepository;
@@ -17,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class CollateralService {
+
+    @Autowired
+    @Lazy
+    private  CustomerService customerService;
+
     private final ModelMapper modelMapper;
 
     private final CollateralRepository collateralRepository;
@@ -75,7 +83,11 @@ public class CollateralService {
 
         var collateral = modelMapper.map(collateralDto, Collateral.class);
 
+        Optional<Customer> byId = customerRepository.findById(Math.toIntExact(collateralDto.getCustomerId()));
+
         collateralRepository.save(collateral);
+
+        customerService.setWorkFlowId(byId.get().getCustomerAccount(), 4);
 
         return CustomResponse.builder()
                 .response("000")
@@ -108,6 +120,8 @@ public class CollateralService {
                     .document("/" + uploadDir + "/" + fileName) // Adjust the path to start with a slash
                     .build();
             collateralImagesRepo.save(collateralImages);
+
+//            customerService.setWorkFlowId();
 
             return CustomResponse.builder()
                     .response("000")
@@ -143,6 +157,9 @@ public class CollateralService {
         collateral.setVerifiedBy(approvalDto.getApprovedBy());
         collateral.setVerifierComment(approvalDto.getVerifiedComment());
         collateralRepository.save(collateral);
+
+//        Optional<Customer> byId = customerRepository.findById(Math.toIntExact(collateralDto.getCustomerId()));
+
 
         return CustomResponse.builder()
                 .response("000")

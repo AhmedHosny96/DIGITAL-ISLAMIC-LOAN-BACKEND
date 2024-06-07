@@ -32,7 +32,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<CustomResponse> customException(CustomException exception, WebRequest request) {
-        var errorMessage = new CustomResponse("004", exception.getMessage());
+        var errorMessage = new CustomResponse("004", exception.getMessage(), null, null);
         return ResponseEntity.status(HttpStatus.OK).body(errorMessage);
 
     }

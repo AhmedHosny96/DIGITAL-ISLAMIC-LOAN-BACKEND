@@ -14,13 +14,11 @@ import com.sahay.customer.model.Customer;
 import com.sahay.customer.model.CustomerBranch;
 import com.sahay.customer.repo.BranchRepository;
 import com.sahay.customer.repo.CustomerRepository;
+import com.sahay.dto.CustomResponse;
 import com.sahay.exception.ApiException;
 import com.sahay.loan.dto.*;
 import com.sahay.loan.entity.*;
-import com.sahay.loan.repo.CollateralRepository;
-import com.sahay.loan.repo.CbsPostingRepo;
-import com.sahay.loan.repo.OtpRepository;
-import com.sahay.loan.repo.ProductRepository;
+import com.sahay.loan.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -58,6 +56,8 @@ public class LoanService {
     private final Double LOAN_LIMIT = 100_000.0;
 
     private final OtpRepository otpRepository;
+
+
 
     private final ProductRepository productRepository;
 
@@ -100,6 +100,9 @@ public class LoanService {
     private final CollateralService collateralService;
 
     private final GuarantorService guarantorService;
+
+    // get loan stage
+
 
 
 //    private final AccountService accountService;
@@ -166,6 +169,8 @@ public class LoanService {
                     otpEntity.setParkReference(parkTransactionId);
                     otpEntity.setStatus(1);
                     otpRepository.save(otpEntity);
+
+                    customerService.setWorkFlowId(otpEntity.getAccountNumber(), 10);
                     customResponse.put("response", "000");
                     customResponse.put("responseDescription", "Loan Application process of ETB " + principalAmount + " is initiated, and 20% compulsory saving of amount " + twentyPercent + " is withheld");
                     customResponse.put("reference", confirmationRequest.getReference());
@@ -252,6 +257,7 @@ public class LoanService {
 
             // notify the guarantor
 
+            customerService.setWorkFlowId(customerByAccountNumber.getCustomerAccount(), 11);
 
             // GET THE BRANCH PREFIX
 

@@ -20,7 +20,9 @@ import com.sahay.exception.CustomException;
 import com.sahay.loan.entity.Collateral;
 import com.sahay.loan.entity.Guarantor;
 import com.sahay.loan.entity.Request;
+import com.sahay.loan.entity.WorkFlow;
 import com.sahay.loan.repo.OtpRepository;
+import com.sahay.loan.repo.WorkFlowRepo;
 import com.sahay.loan.service.CollateralService;
 import com.sahay.loan.service.GuarantorService;
 import com.sahay.loan.service.UtilityService;
@@ -65,6 +67,7 @@ public class CustomerService {
 
     private final CustomerDocumentRepository customerDocumentRepository;
 
+    private final WorkFlowRepo workFlowRepo;
 
     private final GuarantorService guarantorService;
 
@@ -89,6 +92,18 @@ public class CustomerService {
     private final String SAHAY_API = "http://172.16.1.17:8013/channel/request";
 
     //    @Value("${sahay.sms-endpoint}")
+
+
+    public void setWorkFlowId(String customerAccount, int stageId) {
+        Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(customerAccount);
+
+        if (byCustomerAccount.isPresent()) {
+            Customer customer = byCustomerAccount.get();
+
+            customer.setWorkFlowId(stageId);
+            customerRepository.save(customer);
+        }
+    }
 
 
     public List<CustomerDocument> getCustomerDocumentById(int customerId) {
@@ -122,6 +137,20 @@ public class CustomerService {
                     if (msgId == 0) {
                         response.put("response", "000");
                         response.put("responseDescription", "Customer onboarded initiated");
+
+//                        setWorkFlowId(request.getAccountNumber(), 1);
+
+                        Customer customerByAccountNumber = null;
+                        try {
+                            customerByAccountNumber = getCustomerByAccountNumber(request.getAccountNumber());
+                        } catch (CustomException e) {
+                            e.printStackTrace();
+                        }
+
+                        customerByAccountNumber.setWorkFlowId(1);
+
+                        customerRepository.save(customerByAccountNumber);
+
                         return response;
                     } else {
                         response.put("response", "004");
@@ -161,6 +190,8 @@ public class CustomerService {
 
                     response.put("response", "000");
                     response.put("responseDescription", "Customer verified successfully");
+
+                    setWorkFlowId(request.getAccountNumber(), 2);
 
                     return response; // return value not used
                 }
@@ -499,6 +530,8 @@ public class CustomerService {
             response = "004";
         }
 
+        setWorkFlowId(eligibilityRequest.getAccountNumber(), 9);
+
 
         EligibilityResponse eligibilityResponse = new EligibilityResponse(response, responseDescription,
                 accountLookupResponse.get("name").toString(), eligibilityRequest.getAccountNumber(), eligible, uniqueReference);
@@ -582,6 +615,33 @@ public class CustomerService {
 //                .map(guarantor -> true)
 //                .orElse(false);
 //    }
+
+    public CustomResponse getLoanStage(String accountNumber) {
+
+        Optional<Customer> byCustomerAccount = customerRepository.findByCustomerAccount(accountNumber);
+
+
+        if (!byCustomerAccount.isPresent()) {
+            return CustomResponse.builder()
+                    .response("004")
+
+                    .responseDescription("Customer has no loan records")
+                    .build();
+        }
+
+        Customer customer = byCustomerAccount.get();
+
+        Optional<WorkFlow> flowRepoById = workFlowRepo.findById(customer.getWorkFlowId());
+
+
+        return CustomResponse.builder()
+                .response("000")
+                .responseDescription("Success")
+                .stageId(customer.getWorkFlowId())
+                .stageDescription(flowRepoById.get().getDescription())
+                .build();
+    }
+
 
     // todo : SEND confirmation with OTP
 

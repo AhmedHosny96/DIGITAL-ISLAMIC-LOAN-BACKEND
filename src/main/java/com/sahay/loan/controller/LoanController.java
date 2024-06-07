@@ -2,8 +2,11 @@ package com.sahay.loan.controller;
 
 import com.sahay.loan.dto.*;
 import com.sahay.loan.entity.Product;
+import com.sahay.loan.entity.WorkFlow;
+import com.sahay.loan.repo.WorkFlowRepo;
 import com.sahay.loan.service.LoanService;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +23,37 @@ public class LoanController {
 
     private final LoanService loanService;
 
+    private final WorkFlowRepo workFlowRepo;
+
     @GetMapping("/products")
     public ResponseEntity<?> getProductSetup() {
         try {
             List<Product> loanProducts = loanService.getAllProducts();
+
 
             return new ResponseEntity<>(loanProducts, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error retrieving product setup", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(value = "/workflow", produces = "application/json")
+    public ResponseEntity<?> getAllWorkFlows() {
+        try {
+            List<WorkFlow> allWorkFlow = workFlowRepo.findAll();
+
+            var response = new JSONObject();
+            response.put("response", "000");
+            response.put("responseDescription", "success");
+            response.put("workflow", allWorkFlow);
+
+            return new ResponseEntity<>(response.toString(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error retrieving workflow", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
     // calculate loan amount
     @PostMapping(value = "/markup", produces = "application/json")

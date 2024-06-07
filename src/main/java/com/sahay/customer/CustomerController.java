@@ -90,7 +90,12 @@ public class CustomerController {
 
     }
 
-
+    @GetMapping(value = "/stage", produces = "application/json")
+    public ResponseEntity<?> knowCustomerLoanStage(@RequestParam("customerAccount") String customerAccount) {
+        CustomResponse loanStage = customerService.getLoanStage(customerAccount);
+        return new ResponseEntity<>(loanStage, HttpStatus.OK);
+    }
+    
     @GetMapping(value = "/documents", produces = "application/json")
     public ResponseEntity<?> getAllBranches(@RequestParam("customerId") int customerId) {
         List<CustomerDocument> customerDocumentById = customerService.getCustomerDocumentById(customerId);

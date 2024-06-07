@@ -73,4 +73,7 @@ public class Customer {
 
     @Column(name = "VerifiedComment")
     private String verifiedComment;
+
+    @Column(name = "WorkFlowId")
+    private Integer workFlowId;
 }

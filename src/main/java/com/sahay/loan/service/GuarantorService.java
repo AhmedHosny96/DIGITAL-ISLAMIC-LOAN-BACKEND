@@ -128,6 +128,9 @@ public class GuarantorService {
 
         guarantorRepo.save(guarantor);
 
+
+        customerService.setWorkFlowId(guarantorDto.getCustomerAccount(), 7);
+
         return CustomResponse.builder()
                 .response("000")
                 .responseDescription("Guarantor created successfully")
@@ -149,6 +152,7 @@ public class GuarantorService {
             guarantorRepo.save(guarantor);
             // send sms to the customer
 
+            customerService.setWorkFlowId(guarantor.getCustomerAccount(), 12);
             // notify the customer acc
 
             utilityService.sendConfirmationMessage(guarantor.getCustomerAccount(),
@@ -156,12 +160,12 @@ public class GuarantorService {
             );
 
             return CustomResponse.builder().response("000").responseDescription("Guarantor accepted the deal").build();
-        } else {
+        } else if (status == 2) {
 
             utilityService.sendConfirmationMessage(guarantor.getCustomerAccount(),
                     "Dear customer guarantor has rejected to guarantee you "
             );
-
+            customerService.setWorkFlowId(guarantor.getCustomerAccount(), 13);
         }
 
         // send sms
@@ -181,7 +185,6 @@ public class GuarantorService {
 
             Customer customerByAccountNumber = customerService.getCustomerByAccountNumber(guarantor.getCustomerAccount());
 
-
             // notify guarantor here
 
             String loanMessagePattern = "Dear customer, account {0} has selected you as a guarantor for an amount of {1}. To accept, please dial *873#6*3*1.";
@@ -192,6 +195,7 @@ public class GuarantorService {
 
             utilityService.sendConfirmationMessage(guarantor.getGuarantorAccount(), message);
 
+            customerService.setWorkFlowId(customerByAccountNumber.getCustomerAccount(), 8);
             return CustomResponse.builder()
                     .response("000")
                     .responseDescription("Guarantor approved successfully")
